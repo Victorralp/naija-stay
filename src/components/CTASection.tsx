@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Gift, Mail, ArrowRight } from "lucide-react";
+import iiiImage from "../../iii.jpeg";
 
 const CTASection = () => {
   return (
@@ -15,7 +16,22 @@ const CTASection = () => {
               <Badge variant="secondary" className="mb-4">Special Offer</Badge>
               <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
                 Ready to Experience
-                <span className="gradient-hero bg-clip-text text-transparent"> Nigerian </span>
+                <span
+                  className="relative inline-block"
+                  style={{
+                    background: `linear-gradient(45deg, #228B22, #FFD700, #228B22, #FFD700)`,
+                    backgroundSize: "300% 100%",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    animation: "gradientShift 2s ease-in-out infinite",
+                    fontWeight: "900",
+                    color: "#228B22",
+                  }}
+                >
+                  {" "}
+                  Nigerian
+                </span>
                 Hospitality?
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed mb-8">
@@ -80,12 +96,12 @@ const CTASection = () => {
                   <Input 
                     type="text" 
                     placeholder="Enter your full name"
-                    className="w-full"
+                    className="w-full bg-background border border-input text-foreground placeholder:text-muted-foreground"
                   />
                   <Input 
                     type="email" 
                     placeholder="Enter your email address"
-                    className="w-full"
+                    className="w-full bg-background border border-input text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
                 
@@ -124,7 +140,7 @@ const CTASection = () => {
 
         {/* Bottom Banner */}
         <div className="mt-16 text-center">
-          <Card className="max-w-4xl mx-auto gradient-hero text-primary-foreground shadow-elegant">
+          <Card className="max-w-4xl mx-auto bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-elegant">
             <CardContent className="p-8 md:p-12">
               <h3 className="text-2xl md:text-3xl font-bold mb-4">
                 🇳🇬 Experience Authentic Nigeria 🇳🇬

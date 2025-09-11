@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Award, Globe, Users } from "lucide-react";
+import iiiImage from "../../iii.jpeg";
 
 const AboutSection = () => {
   const values = [
@@ -35,7 +36,22 @@ const AboutSection = () => {
           <Badge variant="secondary" className="mb-4">About Naija Hotels</Badge>
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             Celebrating
-            <span className="gradient-hero bg-clip-text text-transparent"> Nigerian </span>
+            <span
+              className="relative inline-block"
+              style={{
+                background: `linear-gradient(45deg, #228B22, #FFD700, #228B22, #FFD700)`,
+                backgroundSize: "300% 100%",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "gradientShift 2s ease-in-out infinite",
+                fontWeight: "900",
+                color: "#228B22",
+              }}
+            >
+              {" "}
+              Nigerian
+            </span>
             Hospitality Since 2010
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">

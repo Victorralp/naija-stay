@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, Wifi, Car, Coffee, Waves } from "lucide-react";
+import iiiImage from "../../iii.jpeg";
 
 const FeaturedHotels = () => {
   // Sample hotel data - this would come from Supabase in the full implementation
@@ -64,7 +65,22 @@ const FeaturedHotels = () => {
           <Badge variant="secondary" className="mb-4">Featured Properties</Badge>
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             Discover Our
-            <span className="gradient-hero bg-clip-text text-transparent"> Premium </span>
+            <span
+              className="relative inline-block"
+              style={{
+                background: `linear-gradient(45deg, #228B22, #FFD700, #228B22, #FFD700)`,
+                backgroundSize: "300% 100%",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "gradientShift 2s ease-in-out infinite",
+                fontWeight: "900",
+                color: "#228B22",
+              }}
+            >
+              {" "}
+              Premium
+            </span>
             Hotels
           </h2>
           <p className="text-lg text-muted-foreground">

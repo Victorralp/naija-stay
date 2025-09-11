@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Building2, Users, Star } from "lucide-react";
 import lagosImage from "@/assets/lagos-skyline.jpg";
+import iiiImage from "../../iii.jpeg";
 
 const LocationsSection = () => {
   const locations = [
@@ -46,7 +47,22 @@ const LocationsSection = () => {
           <Badge variant="secondary" className="mb-4">Our Locations</Badge>
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             Discover
-            <span className="gradient-hero bg-clip-text text-transparent"> Nigeria's </span>
+            <span
+              className="relative inline-block"
+              style={{
+                background: `linear-gradient(45deg, #228B22, #FFD700, #228B22, #FFD700)`,
+                backgroundSize: "300% 100%",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "gradientShift 2s ease-in-out infinite",
+                fontWeight: "900",
+                color: "#228B22",
+              }}
+            >
+              {" "}
+              Nigeria's
+            </span>
             Premier Cities
           </h2>
           <p className="text-lg text-muted-foreground">
@@ -70,27 +86,27 @@ const LocationsSection = () => {
                   alt={`${location.city} cityscape`}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 gradient-overlay" />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/10 to-transparent" />
                 
                 {/* City Info Overlay */}
                 <div className="absolute top-4 left-4 right-4">
                   <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-2xl font-bold text-primary-foreground">{location.city}</h3>
-                      <p className="text-primary-foreground/80 text-sm">{location.state}</p>
+                    <div className="bg-background/80 backdrop-blur-sm p-3 rounded-lg">
+                      <h3 className="text-2xl font-bold text-foreground">{location.city}</h3>
+                      <p className="text-foreground text-sm">{location.state}</p>
                     </div>
-                    <div className="flex items-center space-x-1 bg-background/20 backdrop-blur-sm px-3 py-1 rounded-full">
+                    <div className="flex items-center space-x-1 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full">
                       <Star className="w-4 h-4 fill-secondary text-secondary" />
-                      <span className="text-primary-foreground text-sm font-medium">{location.rating}</span>
+                      <span className="text-foreground text-sm font-medium">{location.rating}</span>
                     </div>
                   </div>
                 </div>
                 
                 {/* Hotels Count */}
                 <div className="absolute bottom-4 left-4">
-                  <div className="flex items-center space-x-2 bg-background/20 backdrop-blur-sm px-3 py-2 rounded-full">
-                    <Building2 className="w-4 h-4 text-primary-foreground" />
-                    <span className="text-primary-foreground text-sm font-medium">{location.hotels} Hotels</span>
+                  <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full">
+                    <Building2 className="w-4 h-4 text-secondary" />
+                    <span className="text-foreground text-sm font-medium">{location.hotels} Hotels</span>
                   </div>
                 </div>
               </div>

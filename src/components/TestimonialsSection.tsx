@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Quote } from "lucide-react";
 import testimonialImage from "@/assets/testimonial-family.jpg";
+import iiiImage from "../../iii.jpeg";
 
 const TestimonialsSection = () => {
   const testimonials = [
@@ -32,17 +33,32 @@ const TestimonialsSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-foreground text-background">
+    <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <Badge variant="outline" className="mb-4 border-background/30 text-background">Guest Stories</Badge>
-          <h2 className="text-4xl md:text-5xl font-bold text-background mb-6">
+          <Badge variant="secondary" className="mb-4">Guest Stories</Badge>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             What Our
-            <span className="text-secondary"> Guests </span>
+            <span
+              className="relative inline-block"
+              style={{
+                background: `linear-gradient(45deg, #228B22, #FFD700, #228B22, #FFD700)`,
+                backgroundSize: "300% 100%",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "gradientShift 2s ease-in-out infinite",
+                fontWeight: "900",
+                color: "#228B22",
+              }}
+            >
+              {" "}
+              Guests
+            </span>
             Say About Us
           </h2>
-          <p className="text-lg text-background/80">
+          <p className="text-lg text-muted-foreground">
             Real experiences from travelers who chose to stay with us across Nigeria's premier destinations.
           </p>
         </div>
@@ -52,7 +68,7 @@ const TestimonialsSection = () => {
           {testimonials.map((testimonial, index) => (
             <Card 
               key={testimonial.id}
-              className="bg-background/10 backdrop-blur-sm border-background/20 hover:bg-background/15 transition-all duration-300 hover:-translate-y-2 shadow-warm animate-fade-in"
+              className="bg-background shadow-soft hover:shadow-elegant transition-all duration-300 hover:-translate-y-2 animate-fade-in"
               style={{ animationDelay: `${index * 0.2}s` }}
             >
               <CardContent className="p-8">
@@ -67,20 +83,20 @@ const TestimonialsSection = () => {
                 </div>
                 
                 {/* Testimonial Text */}
-                <p className="text-background/90 leading-relaxed mb-6">
+                <p className="text-foreground leading-relaxed mb-6">
                   "{testimonial.text}"
                 </p>
                 
                 {/* Author Info */}
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
-                    <span className="text-background font-semibold text-sm">
+                    <span className="text-primary-foreground font-semibold text-sm">
                       {testimonial.name.split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-background">{testimonial.name}</h4>
-                    <p className="text-sm text-background/70">{testimonial.role}</p>
+                    <h4 className="font-semibold text-foreground">{testimonial.name}</h4>
+                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                   </div>
                 </div>
               </CardContent>
@@ -92,19 +108,19 @@ const TestimonialsSection = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="text-center">
             <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">10K+</div>
-            <div className="text-background/80">Happy Guests</div>
+            <div className="text-muted-foreground">Happy Guests</div>
           </div>
           <div className="text-center">
             <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">50+</div>
-            <div className="text-background/80">Premium Hotels</div>
+            <div className="text-muted-foreground">Premium Hotels</div>
           </div>
           <div className="text-center">
             <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">98%</div>
-            <div className="text-background/80">Satisfaction Rate</div>
+            <div className="text-muted-foreground">Satisfaction Rate</div>
           </div>
           <div className="text-center">
             <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">24/7</div>
-            <div className="text-background/80">Customer Support</div>
+            <div className="text-muted-foreground">Customer Support</div>
           </div>
         </div>
       </div>

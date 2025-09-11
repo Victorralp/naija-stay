@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, MapPin, Phone } from "lucide-react";
 
@@ -6,7 +7,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -19,10 +20,11 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#home" className="text-foreground hover:text-primary transition-smooth">Home</a>
-            <a href="#hotels" className="text-foreground hover:text-primary transition-smooth">Hotels</a>
-            <a href="#about" className="text-foreground hover:text-primary transition-smooth">About</a>
-            <a href="#contact" className="text-foreground hover:text-primary transition-smooth">Contact</a>
+            <Link to="/" className="text-foreground hover:text-primary transition-smooth">Home</Link>
+            <Link to="/rooms" className="text-foreground hover:text-primary transition-smooth">Rooms</Link>
+            <Link to="/about" className="text-foreground hover:text-primary transition-smooth">About</Link>
+            <Link to="/contact" className="text-foreground hover:text-primary transition-smooth">Contact</Link>
+            <Link to="/profile" className="text-foreground hover:text-primary transition-smooth">Profile</Link>
           </nav>
 
           {/* Contact Info & CTA */}
@@ -31,9 +33,11 @@ const Header = () => {
               <Phone className="w-4 h-4" />
               <span>+234 809 123 4567</span>
             </div>
-            <Button variant="hero" size="sm">
-              Book Now
-            </Button>
+            <Link to="/booking">
+              <Button variant="hero" size="sm">
+                Book Now
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -51,13 +55,16 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden border-t border-border">
             <nav className="flex flex-col space-y-4 py-4">
-              <a href="#home" className="text-foreground hover:text-primary transition-smooth">Home</a>
-              <a href="#hotels" className="text-foreground hover:text-primary transition-smooth">Hotels</a>
-              <a href="#about" className="text-foreground hover:text-primary transition-smooth">About</a>
-              <a href="#contact" className="text-foreground hover:text-primary transition-smooth">Contact</a>
-              <Button variant="hero" size="sm" className="w-full">
-                Book Now
-              </Button>
+              <Link to="/" className="text-foreground hover:text-primary transition-smooth">Home</Link>
+              <Link to="/rooms" className="text-foreground hover:text-primary transition-smooth">Rooms</Link>
+              <Link to="/about" className="text-foreground hover:text-primary transition-smooth">About</Link>
+              <Link to="/contact" className="text-foreground hover:text-primary transition-smooth">Contact</Link>
+              <Link to="/profile" className="text-foreground hover:text-primary transition-smooth">Profile</Link>
+              <Link to="/booking">
+                <Button variant="hero" size="sm" className="w-full">
+                  Book Now
+                </Button>
+              </Link>
             </nav>
           </div>
         )}

@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Wifi, Car, Coffee, Waves, Utensils, Shield, Headphones, Dumbbell } from "lucide-react";
 import spaImage from "@/assets/spa-wellness.jpg";
+import iiiImage from "../../iii.jpeg";
 
 const ServicesSection = () => {
   const services = [
@@ -55,7 +56,22 @@ const ServicesSection = () => {
           <Badge variant="secondary" className="mb-4">Premium Services</Badge>
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             World-Class
-            <span className="gradient-hero bg-clip-text text-transparent"> Amenities </span>
+            <span
+              className="relative inline-block"
+              style={{
+                background: `linear-gradient(45deg, #228B22, #FFD700, #228B22, #FFD700)`,
+                backgroundSize: "300% 100%",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "gradientShift 2s ease-in-out infinite",
+                fontWeight: "900",
+                color: "#228B22",
+              }}
+            >
+              {" "}
+              Amenities
+            </span>
             & Services
           </h2>
           <p className="text-lg text-muted-foreground">
@@ -96,26 +112,28 @@ const ServicesSection = () => {
                 alt="Luxury spa and wellness facilities"
                 className="w-full h-[600px] object-cover"
               />
-              <div className="absolute inset-0 gradient-overlay" />
+              <div className="absolute inset-0 bg-gradient-to-t from-foreground/10 to-transparent" />
               <div className="absolute bottom-8 left-8 right-8 text-center">
-                <h3 className="text-2xl font-bold text-primary-foreground mb-2">
-                  Wellness & Relaxation
-                </h3>
-                <p className="text-primary-foreground/90 text-sm leading-relaxed">
-                  Indulge in our world-class spa treatments inspired by traditional Nigerian wellness practices
-                </p>
+                <div className="bg-background/80 backdrop-blur-sm p-4 rounded-xl inline-block">
+                  <h3 className="text-2xl font-bold text-foreground mb-2">
+                    Wellness & Relaxation
+                  </h3>
+                  <p className="text-foreground text-sm leading-relaxed">
+                    Indulge in our world-class spa treatments inspired by traditional Nigerian wellness practices
+                  </p>
+                </div>
               </div>
             </div>
             
             {/* Floating Stats */}
-            <Card className="absolute -top-6 -right-6 bg-background/90 backdrop-blur-sm shadow-elegant animate-float">
+            <Card className="absolute -top-6 -right-6 bg-background shadow-elegant animate-float">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-primary">98%</div>
                 <div className="text-xs text-muted-foreground">Guest Satisfaction</div>
               </CardContent>
             </Card>
             
-            <Card className="absolute -bottom-6 -left-6 bg-background/90 backdrop-blur-sm shadow-elegant animate-float" style={{ animationDelay: "1.5s" }}>
+            <Card className="absolute -bottom-6 -left-6 bg-background shadow-elegant animate-float" style={{ animationDelay: "1.5s" }}>
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-secondary">24/7</div>
                 <div className="text-xs text-muted-foreground">Premium Service</div>

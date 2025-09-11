@@ -1,0 +1,103 @@
+Project Goal:
+Build a modern, responsive Nigerian hotel booking website with full booking functionality, powered by React + Firebase. The site should emphasize local culture, seamless UX, and reliable payments.
+
+Core Stack:
+
+Frontend: React + Vite
+
+Styling: TailwindCSS
+
+Animations: framer-motion / anime.js
+
+Backend & Services: Firebase (Auth, Firestore, Storage, Hosting, Functions if needed)
+
+Payments: Paystack or Flutterwave (NGN)
+
+Features & Pages
+1. Authentication (Firebase Auth)
+
+Email/password login & signup.
+
+Social login: Google (optional).
+
+Role-based auth: Admin (hotel owners) and Users (guests).
+
+2. Homepage
+
+Nigerian hotel/resort hero banner with CTA (“Book Now”).
+
+Animated carousel of top hotels.
+
+Testimonials stored in Firestore.
+
+Newsletter subscription (Firestore collection).
+
+3. Hotels/Rooms Listing (Firestore)
+
+Data pulled from Firestore “hotels” collection.
+
+Filtering: location (Lagos, Abuja, Port Harcourt), price range, rating.
+
+Search functionality.
+
+Hotel cards with hover animations.
+
+4. Single Hotel Page
+
+Data dynamically loaded from Firestore (/hotels/{hotelId}).
+
+Photo gallery (images stored in Firebase Storage).
+
+Room details, amenities, availability calendar.
+
+Booking button → opens booking flow.
+
+5. Booking Flow (Firestore + Paystack/Flutterwave)
+
+Select dates & room type.
+
+Enter guest details.
+
+Process payment via Paystack/Flutterwave.
+
+On success, booking saved in Firestore (/bookings/{bookingId}).
+
+Confirmation page with animated checkmark.
+
+6. Admin Dashboard
+
+Add/edit/delete hotels & rooms (CRUD in Firestore).
+
+Upload hotel images to Firebase Storage.
+
+View bookings & payments.
+
+7. Contact Page
+
+Contact form → saves messages to Firestore.
+
+Phone/WhatsApp links.
+
+Embedded Google Maps (hotel location).
+
+Firebase Structure (example)
+
+users → {uid, name, email, role}
+
+hotels → {id, name, city, price, rating, images[], description, amenities[]}
+
+bookings → {id, userId, hotelId, checkIn, checkOut, guests, paymentStatus}
+
+messages → {id, userId, subject, message}
+
+Technical Notes
+
+Use Firestore for real-time hotel availability updates.
+
+Store hotel photos in Firebase Storage.
+
+Protect admin routes with Firebase Auth + role checks.
+
+Deploy frontend via Firebase Hosting.
+
+(Optional) Use Firebase Functions for payment webhook handling (Paystack/Flutterwave).
