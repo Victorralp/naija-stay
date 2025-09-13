@@ -16,6 +16,17 @@ import { Booking } from '@/types/hotel';
 
 const BOOKINGS_COLLECTION = 'bookings';
 
+// Helper function to convert Firestore data to Booking object with proper Date objects
+function convertFirestoreBooking(data: any): Booking {
+  return {
+    ...data,
+    checkInDate: data.checkInDate instanceof Timestamp ? data.checkInDate.toDate() : data.checkInDate,
+    checkOutDate: data.checkOutDate instanceof Timestamp ? data.checkOutDate.toDate() : data.checkOutDate,
+    createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
+    updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt,
+  } as Booking;
+}
+
 export const bookingService = {
   /**
    * Create a new booking
@@ -37,10 +48,10 @@ export const bookingService = {
     const bookingDoc = await getDoc(doc(db, BOOKINGS_COLLECTION, bookingId));
     if (!bookingDoc.exists()) return null;
     
-    return {
+    return convertFirestoreBooking({
       id: bookingDoc.id,
       ...bookingDoc.data()
-    } as Booking;
+    });
   },
 
   /**
@@ -53,10 +64,29 @@ export const bookingService = {
       orderBy('createdAt', 'desc')
     );
     const bookingsSnapshot = await getDocs(q);
-    return bookingsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Booking));
+    return bookingsSnapshot.docs.map(doc => 
+      convertFirestoreBooking({
+        id: doc.id,
+        ...doc.data()
+      })
+    );
+  },
+
+  /**
+   * Get all bookings (for admin)
+   */
+  async getAllBookings(): Promise<Booking[]> {
+    const q = query(
+      collection(db, BOOKINGS_COLLECTION),
+      orderBy('createdAt', 'desc')
+    );
+    const bookingsSnapshot = await getDocs(q);
+    return bookingsSnapshot.docs.map(doc => 
+      convertFirestoreBooking({
+        id: doc.id,
+        ...doc.data()
+      })
+    );
   },
 
   /**

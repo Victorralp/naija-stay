@@ -5,6 +5,7 @@ import { authService } from '../auth/auth-service';
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<{success: boolean; message: string}>;
   register: (credentials: RegisterCredentials) => Promise<{success: boolean; message: string}>;
+  signInWithGoogle: () => Promise<{success: boolean; message: string}>;
   logout: () => Promise<void>;
 }
 
@@ -67,6 +68,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const signInWithGoogle = async (): Promise<{success: boolean; message: string}> => {
+    try {
+      setError(null);
+      const result = await authService.signInWithGoogle();
+      
+      if (result.success && result.user && result.token) {
+        setUser(result.user);
+        localStorage.setItem('authToken', result.token);
+        return { success: true, message: result.message };
+      } else {
+        const errorMessage = result.message || 'Google sign-in failed';
+        setError(errorMessage);
+        return { success: false, message: errorMessage };
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Google sign-in failed';
+      setError(message);
+      return { success: false, message };
+    }
+  };
+
   const logout = async (): Promise<void> => {
     try {
       await authService.logout();
@@ -100,6 +122,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     error,
     login,
     register,
+    signInWithGoogle,
     logout
   };
 

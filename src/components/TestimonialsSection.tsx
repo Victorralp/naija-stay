@@ -1,128 +1,103 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Star, Quote } from "lucide-react";
-import testimonialImage from "@/assets/testimonial-family.jpg";
-import iiiImage from "../../iii.jpeg";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Quote } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const TestimonialsSection = () => {
   const testimonials = [
     {
       id: 1,
-      name: "Adebayo Oladunni",
-      role: "Business Executive, Lagos",
-      rating: 5,
-      text: "Exceptional service and authentic Nigerian hospitality. The staff went above and beyond to make our business conference successful. The facilities are world-class!",
-      image: testimonialImage
+      name: "Adunni O.",
+      role: "Business Traveler",
+      content: "The service at Grand Hotel Lagos was exceptional. The staff went above and beyond to make my stay comfortable. Will definitely be returning!",
+      avatar: "https://via.placeholder.com/100x100?text=AO",
+      rating: 5
     },
     {
       id: 2,
-      name: "Kemi Adebisi",
-      role: "Tourism Blogger, Abuja",
-      rating: 5,
-      text: "As someone who travels extensively across Nigeria, I can confidently say this is one of the finest hotel experiences in the country. The blend of modern luxury with Nigerian culture is perfect.",
-      image: testimonialImage
+      name: "Chinedu M.",
+      role: "Tourist",
+      content: "Beautiful property with stunning views. The location is perfect for exploring the city. The rooftop restaurant has the best jollof rice in town!",
+      avatar: "https://via.placeholder.com/100x100?text=CM",
+      rating: 5
     },
     {
       id: 3,
-      name: "Emmanuel Okoro",
-      role: "Family Vacation, Port Harcourt",
-      rating: 5,
-      text: "Our family vacation was absolutely magical! The kids loved the pool, and we enjoyed the amazing Nigerian cuisine. The staff treated us like royalty from check-in to check-out.",
-      image: testimonialImage
+      name: "Amina K.",
+      role: "Family Vacation",
+      content: "Our family vacation was made perfect by the kid-friendly amenities and spacious rooms. The pool area is fantastic for children and adults alike.",
+      avatar: "https://via.placeholder.com/100x100?text=AK",
+      rating: 4
     }
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
+    <section className="py-16">
       <div className="container mx-auto px-4">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <Badge variant="secondary" className="mb-4">Guest Stories</Badge>
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-            What Our
-            <span
-              className="relative inline-block"
-              style={{
-                background: `linear-gradient(45deg, #228B22, #FFD700, #228B22, #FFD700)`,
-                backgroundSize: "300% 100%",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                animation: "gradientShift 2s ease-in-out infinite",
-                fontWeight: "900",
-                color: "#228B22",
-              }}
-            >
-              {" "}
-              Guests
-            </span>
-            Say About Us
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            Real experiences from travelers who chose to stay with us across Nigeria's premier destinations.
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-3xl font-bold text-foreground mb-4">What Our Guests Say</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Don't just take our word for it - hear from our satisfied customers
           </p>
-        </div>
-
-        {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        </motion.div>
+        
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          viewport={{ once: true }}
+        >
           {testimonials.map((testimonial, index) => (
-            <Card 
+            <motion.div
               key={testimonial.id}
-              className="bg-background shadow-soft hover:shadow-elegant transition-all duration-300 hover:-translate-y-2 animate-fade-in"
-              style={{ animationDelay: `${index * 0.2}s` }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -10 }}
             >
-              <CardContent className="p-8">
-                {/* Quote Icon */}
-                <div className="flex justify-between items-start mb-4">
-                  <Quote className="w-8 h-8 text-secondary opacity-60" />
-                  <div className="flex space-x-1">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-secondary text-secondary" />
-                    ))}
+              <Card className="h-full hover:shadow-lg transition-shadow duration-300">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center space-x-4">
+                      <Avatar>
+                        <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                        <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle className="text-lg">{testimonial.name}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                      </div>
+                    </div>
+                    <Quote className="h-6 w-6 text-primary/20" />
                   </div>
-                </div>
-                
-                {/* Testimonial Text */}
-                <p className="text-foreground leading-relaxed mb-6">
-                  "{testimonial.text}"
-                </p>
-                
-                {/* Author Info */}
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
-                    <span className="text-primary-foreground font-semibold text-sm">
-                      {testimonial.name.split(' ').map(n => n[0]).join('')}
-                    </span>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-foreground">{testimonial.name}</h4>
-                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">"{testimonial.content}"</p>
+                  <div className="flex">
+            {[...Array(5)].map((_, i) => (
+              <svg
+                key={i}
+                className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            ))}
+          </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
-        </div>
-
-        {/* Stats Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div className="text-center">
-            <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">10K+</div>
-            <div className="text-muted-foreground">Happy Guests</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">50+</div>
-            <div className="text-muted-foreground">Premium Hotels</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">98%</div>
-            <div className="text-muted-foreground">Satisfaction Rate</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">24/7</div>
-            <div className="text-muted-foreground">Customer Support</div>
-          </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

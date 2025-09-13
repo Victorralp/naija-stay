@@ -1,48 +1,57 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Layout from "./components/Layout";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import { AuthProvider } from "./contexts/AuthContext";
-import { AuthPage } from "./pages/AuthPage";
-import RoomsList from "./pages/RoomsList";
-import HotelDetails from "./pages/HotelDetails";
-import BookingPage from "./pages/BookingPage";
-import UserProfilePage from "./pages/UserProfilePage";
-import AboutUsPage from "./pages/AboutUsPage";
-import ContactPage from "./pages/ContactPage";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from './contexts/AuthContext';
+import Index from './pages/Index';
+import RoomsPage from './pages/RoomsPage';
+import HotelDetails from './pages/HotelDetails';
+import BookingPage from './pages/BookingPage';
+import EnhancedBookingPage from './pages/EnhancedBookingPage';
+import UserProfilePage from './pages/UserProfilePage';
+import AdminDashboard from './pages/AdminDashboard';
+import ContactPage from './pages/ContactPage';
+import { AuthPage } from './pages/AuthPage';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import FirebaseSetupGuide from './pages/FirebaseSetupGuide';
+import SeedDataPage from './pages/SeedDataPage';
+import AboutUsPage from './pages/AboutUsPage';
+import NotFound from './pages/NotFound';
+import BookingConfirmationPage from './pages/BookingConfirmationPage';
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Layout>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-grow">
               <Routes>
                 <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/rooms" element={<RoomsList />} />
+                <Route path="/rooms" element={<RoomsPage />} />
                 <Route path="/hotel/:id" element={<HotelDetails />} />
                 <Route path="/booking" element={<BookingPage />} />
-                <Route path="/profile" element={<UserProfilePage />} />
-                <Route path="/about" element={<AboutUsPage />} />
+                <Route path="/enhanced-booking" element={<EnhancedBookingPage />} />
+                <Route path="/booking-confirmation/:bookingId" element={<BookingConfirmationPage />} />
+                <Route path="/profile" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
                 <Route path="/contact" element={<ContactPage />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/about" element={<AboutUsPage />} />
+                <Route path="/seed-data" element={<SeedDataPage />} />
+                <Route path="/firebase-setup" element={<FirebaseSetupGuide />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </Layout>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+            </main>
+            <Footer />
+          </div>
+        </Router>
+      </QueryClientProvider>
+    </AuthProvider>
   );
 }
 

@@ -1,7 +1,35 @@
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, Facebook, Twitter, Instagram } from "lucide-react";
+import { useState } from "react";
+import { newsletterService } from "@/services/newsletterService";
+import { toast } from "sonner";
 
 const Footer = () => {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    if (!email) {
+      toast.error("Please enter your email address");
+      setLoading(false);
+      return;
+    }
+    
+    const result = await newsletterService.subscribe(email);
+    
+    if (result.success) {
+      toast.success(result.message);
+      setEmail("");
+    } else {
+      toast.error(result.message);
+    }
+    
+    setLoading(false);
+  };
+
   return (
     <footer className="bg-muted text-foreground pt-16 pb-8">
       <div className="container mx-auto px-4">
@@ -85,16 +113,25 @@ const Footer = () => {
             <p className="text-muted-foreground text-sm mb-4">
               Subscribe to our newsletter for exclusive deals and travel tips
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
               <input 
                 type="email" 
                 placeholder="Enter your email"
                 className="flex-1 px-4 py-2 bg-background border border-input rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                required
               />
-              <Button variant="default" size="default">
-                Subscribe
+              <Button 
+                variant="default" 
+                size="default"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? "Subscribing..." : "Subscribe"}
               </Button>
-            </div>
+            </form>
           </div>
         </div>
 

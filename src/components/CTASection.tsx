@@ -3,9 +3,38 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Gift, Mail, ArrowRight } from "lucide-react";
-import iiiImage from "../../iii.jpeg";
+import { useState } from "react";
+import { newsletterService } from "@/services/newsletterService";
+import { toast } from "sonner";
 
 const CTASection = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    if (!email) {
+      toast.error("Please enter your email address");
+      setLoading(false);
+      return;
+    }
+    
+    const result = await newsletterService.subscribe(email, name);
+    
+    if (result.success) {
+      toast.success(result.message);
+      setName("");
+      setEmail("");
+    } else {
+      toast.error(result.message);
+    }
+    
+    setLoading(false);
+  };
+
   return (
     <section className="py-20 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
       <div className="container mx-auto px-4">
@@ -91,29 +120,42 @@ const CTASection = () => {
               </div>
 
               {/* Newsletter Form */}
-              <div className="space-y-4">
+              <form onSubmit={handleSubscribe} className="space-y-4">
                 <div className="space-y-3">
                   <Input 
                     type="text" 
                     placeholder="Enter your full name"
                     className="w-full bg-background border border-input text-foreground placeholder:text-muted-foreground"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={loading}
                   />
                   <Input 
                     type="email" 
                     placeholder="Enter your email address"
                     className="w-full bg-background border border-input text-foreground placeholder:text-muted-foreground"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
+                    required
                   />
                 </div>
                 
-                <Button variant="hero" size="lg" className="w-full">
-                  Subscribe to Newsletter
+                <Button 
+                  variant="hero" 
+                  size="lg" 
+                  className="w-full"
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading ? "Subscribing..." : "Subscribe to Newsletter"}
                 </Button>
                 
                 <p className="text-xs text-muted-foreground text-center">
                   By subscribing, you agree to our Privacy Policy and Terms of Service. 
                   Unsubscribe anytime with one click.
                 </p>
-              </div>
+              </form>
 
               {/* Social Proof */}
               <div className="mt-6 pt-6 border-t border-border">

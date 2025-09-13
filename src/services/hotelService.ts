@@ -19,16 +19,36 @@ const HOTELS_COLLECTION = 'hotels';
 const ROOMS_COLLECTION = 'rooms';
 const BOOKINGS_COLLECTION = 'bookings';
 
+// Helper function to convert Firestore data to Hotel object with proper Date objects
+function convertFirestoreHotel(data: any): Hotel {
+  return {
+    ...data,
+    createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
+    updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt,
+  } as Hotel;
+}
+
+// Helper function to convert Firestore data to Room object with proper Date objects
+function convertFirestoreRoom(data: any): Room {
+  return {
+    ...data,
+    createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
+    updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt,
+  } as Room;
+}
+
 export const hotelService = {
   /**
    * Get all hotels
    */
   async getHotels(): Promise<Hotel[]> {
     const hotelsSnapshot = await getDocs(collection(db, HOTELS_COLLECTION));
-    return hotelsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Hotel));
+    return hotelsSnapshot.docs.map(doc => 
+      convertFirestoreHotel({
+        id: doc.id,
+        ...doc.data()
+      })
+    );
   },
 
   /**
@@ -42,10 +62,12 @@ export const hotelService = {
       limit(6)
     );
     const hotelsSnapshot = await getDocs(q);
-    return hotelsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Hotel));
+    return hotelsSnapshot.docs.map(doc => 
+      convertFirestoreHotel({
+        id: doc.id,
+        ...doc.data()
+      })
+    );
   },
 
   /**
@@ -55,10 +77,10 @@ export const hotelService = {
     const hotelDoc = await getDoc(doc(db, HOTELS_COLLECTION, hotelId));
     if (!hotelDoc.exists()) return null;
     
-    return {
+    return convertFirestoreHotel({
       id: hotelDoc.id,
       ...hotelDoc.data()
-    } as Hotel;
+    });
   },
 
   /**
@@ -102,10 +124,12 @@ export const hotelService = {
       where('available', '==', true)
     );
     const roomsSnapshot = await getDocs(q);
-    return roomsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Room));
+    return roomsSnapshot.docs.map(doc => 
+      convertFirestoreRoom({
+        id: doc.id,
+        ...doc.data()
+      })
+    );
   },
 
   /**
@@ -115,60 +139,57 @@ export const hotelService = {
     const roomDoc = await getDoc(doc(db, ROOMS_COLLECTION, roomId));
     if (!roomDoc.exists()) return null;
     
-    return {
+    return convertFirestoreRoom({
       id: roomDoc.id,
       ...roomDoc.data()
-    } as Room;
+    });
   },
 
   /**
-   * Get all available rooms
+   * Get all available rooms from Firestore
    */
   async getAvailableRooms(): Promise<Room[]> {
-    // Dummy data for rooms
-    return [
-      {
-        id: 'room1',
-        hotelId: 'hotel1',
-        name: 'Standard Room',
-        description: 'A comfortable standard room with a queen-size bed.',
-        type: 'Standard',
-        capacity: 2,
-        pricePerNight: 25000,
-        amenities: ['AC', 'TV', 'WiFi'],
-        images: ['https://via.placeholder.com/400x300?text=Standard+Room'],
-        available: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: 'room2',
-        hotelId: 'hotel1',
-        name: 'Deluxe Room',
-        description: 'A spacious deluxe room with a king-size bed and city view.',
-        type: 'Deluxe',
-        capacity: 3,
-        pricePerNight: 40000,
-        amenities: ['AC', 'TV', 'WiFi', 'Balcony'],
-        images: ['https://via.placeholder.com/400x300?text=Deluxe+Room'],
-        available: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: 'room3',
-        hotelId: 'hotel2',
-        name: 'Executive Suite',
-        description: 'Luxurious suite with a separate living area and premium amenities.',
-        type: 'Suite',
-        capacity: 4,
-        pricePerNight: 75000,
-        amenities: ['AC', 'TV', 'WiFi', 'Kitchenette', 'Bathtub'],
-        images: ['https://via.placeholder.com/400x300?text=Executive+Suite'],
-        available: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ];
+    const q = query(
+      collection(db, ROOMS_COLLECTION),
+      where('available', '==', true)
+    );
+    const roomsSnapshot = await getDocs(q);
+    return roomsSnapshot.docs.map(doc => 
+      convertFirestoreRoom({
+        id: doc.id,
+        ...doc.data()
+      })
+    );
+  },
+
+  /**
+   * Add new room
+   */
+  async addRoom(roomData: Omit<Room, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    const now = Timestamp.now();
+    const docRef = await addDoc(collection(db, ROOMS_COLLECTION), {
+      ...roomData,
+      createdAt: now,
+      updatedAt: now
+    });
+    return docRef.id;
+  },
+
+  /**
+   * Update room
+   */
+  async updateRoom(roomId: string, roomData: Partial<Room>): Promise<void> {
+    const now = Timestamp.now();
+    await updateDoc(doc(db, ROOMS_COLLECTION, roomId), {
+      ...roomData,
+      updatedAt: now
+    });
+  },
+
+  /**
+   * Delete room
+   */
+  async deleteRoom(roomId: string): Promise<void> {
+    await deleteDoc(doc(db, ROOMS_COLLECTION, roomId));
   }
 };

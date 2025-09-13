@@ -5,6 +5,13 @@ export interface User {
   phoneNumber?: string;
   role: 'user' | 'admin';
   createdAt: Date;
+  // Firebase-specific properties that might be available
+  displayName?: string;
+  photoURL?: string;
+  metadata?: {
+    creationTime?: string;
+    lastSignInTime?: string;
+  };
 }
 
 export interface AuthState {

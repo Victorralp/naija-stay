@@ -1,73 +1,76 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Menu, X, MapPin, Phone } from "lucide-react";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { 
+  Home, 
+  Building2, 
+  User, 
+  LogIn, 
+  LogOut, 
+  Shield, 
+  Database 
+} from 'lucide-react';
 
-const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const Header: React.FC = () => {
+  const { user, logout } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+    <header className="bg-white shadow-md">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 gradient-hero rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">NH</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">Naija Hotels</span>
-          </div>
+        <div className="flex justify-between items-center h-16">
+          <Link to="/" className="flex items-center space-x-2">
+            <Building2 className="h-8 w-8 text-blue-600" />
+            <span className="text-xl font-bold text-gray-900">NaijaStay</span>
+          </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-foreground hover:text-primary transition-smooth">Home</Link>
-            <Link to="/rooms" className="text-foreground hover:text-primary transition-smooth">Rooms</Link>
-            <Link to="/about" className="text-foreground hover:text-primary transition-smooth">About</Link>
-            <Link to="/contact" className="text-foreground hover:text-primary transition-smooth">Contact</Link>
-            <Link to="/profile" className="text-foreground hover:text-primary transition-smooth">Profile</Link>
+          <nav className="hidden md:flex space-x-8">
+            <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Home
+            </Link>
+            <Link to="/rooms" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Rooms
+            </Link>
+            <Link to="/about" className="text-gray-700 hover:text-blue-600 transition-colors">
+              About
+            </Link>
+            <Link to="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Contact
+            </Link>
           </nav>
 
-          {/* Contact Info & CTA */}
-          <div className="hidden lg:flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <Phone className="w-4 h-4" />
-              <span>+234 809 123 4567</span>
-            </div>
-            <Link to="/booking">
-              <Button variant="hero" size="sm">
-                Book Now
-              </Button>
-            </Link>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X /> : <Menu />}
-          </Button>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden border-t border-border">
-            <nav className="flex flex-col space-y-4 py-4">
-              <Link to="/" className="text-foreground hover:text-primary transition-smooth">Home</Link>
-              <Link to="/rooms" className="text-foreground hover:text-primary transition-smooth">Rooms</Link>
-              <Link to="/about" className="text-foreground hover:text-primary transition-smooth">About</Link>
-              <Link to="/contact" className="text-foreground hover:text-primary transition-smooth">Contact</Link>
-              <Link to="/profile" className="text-foreground hover:text-primary transition-smooth">Profile</Link>
-              <Link to="/booking">
-                <Button variant="hero" size="sm" className="w-full">
-                  Book Now
+          <div className="flex items-center space-x-4">
+            {user ? (
+              <>
+                <Link to="/profile">
+                  <Button variant="ghost" size="sm">
+                    <User className="h-4 w-4 mr-2" />
+                    Profile
+                  </Button>
+                </Link>
+                {user.email === 'admin@example.com' && (
+                  <Link to="/admin">
+                    <Button variant="ghost" size="sm">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+                <Button onClick={logout} variant="outline" size="sm">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Link to="/auth">
+                <Button variant="outline" size="sm">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Login
                 </Button>
               </Link>
-            </nav>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </header>
   );
