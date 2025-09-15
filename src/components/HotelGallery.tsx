@@ -46,7 +46,7 @@ const HotelGallery = ({ images, hotelName }: HotelGalleryProps) => {
 
   if (!images || images.length === 0) {
     return (
-      <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-96 flex items-center justify-center">
+      <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center">
         <span className="text-gray-500">No images available</span>
       </div>
     );
@@ -56,24 +56,32 @@ const HotelGallery = ({ images, hotelName }: HotelGalleryProps) => {
     <div className="space-y-4">
       {/* Main image */}
       <div 
-        className="relative h-96 rounded-lg overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-shadow duration-300"
+        className="relative w-full h-64 md:h-96 rounded-xl overflow-hidden cursor-pointer shadow-lg"
         onClick={() => openGallery(0)}
       >
         <img
           src={images[0]}
           alt={`${hotelName} - Main view`}
           className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+          loading="lazy"
         />
-        {images.length > 1 && (
-          <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end">
+          <Button 
+            variant="secondary" 
+            className="m-4"
+            onClick={(e) => {
+              e.stopPropagation();
+              openGallery(0);
+            }}
+          >
             View Gallery ({images.length} photos)
-          </div>
-        )}
+          </Button>
+        </div>
       </div>
 
-      {/* Thumbnail grid for additional images */}
+      {/* Thumbnail grid */}
       {images.length > 1 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {images.slice(1, 5).map((image, index) => (
             <div 
               key={index}
@@ -84,6 +92,7 @@ const HotelGallery = ({ images, hotelName }: HotelGalleryProps) => {
                 src={image}
                 alt={`${hotelName} - View ${index + 2}`}
                 className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                loading="lazy"
               />
               {index === 3 && images.length > 5 && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -104,12 +113,12 @@ const HotelGallery = ({ images, hotelName }: HotelGalleryProps) => {
           className="max-w-4xl max-h-[90vh] p-0 bg-black border-0 rounded-lg overflow-hidden"
           onKeyDown={handleKeyDown}
         >
-          <div className="relative h-[80vh]">
+          <div className="relative w-full h-[70vh]">
             {/* Close button */}
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-4 right-4 z-10 bg-black/50 text-white hover:bg-black/70"
+              className="absolute right-2 top-2 z-10 bg-black/50 text-white hover:bg-black/70"
               onClick={closeGallery}
             >
               <X className="h-6 w-6" />
@@ -147,6 +156,7 @@ const HotelGallery = ({ images, hotelName }: HotelGalleryProps) => {
               src={images[currentImageIndex]}
               alt={`${hotelName} - Image ${currentImageIndex + 1}`}
               className="w-full h-full object-contain"
+              loading="lazy"
             />
           </div>
         </DialogContent>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import Index from './pages/Index';
@@ -19,17 +19,65 @@ import SeedDataPage from './pages/SeedDataPage';
 import AboutUsPage from './pages/AboutUsPage';
 import NotFound from './pages/NotFound';
 import BookingConfirmationPage from './pages/BookingConfirmationPage';
+import { useKeyboardShortcut } from './hooks/useKeyboardShortcut';
+import { toast } from 'sonner';
+import { performanceMonitor } from './utils/performance';
+import { heatmapTracker } from './utils/heatmap';
 
 const queryClient = new QueryClient();
 
+// Create a component that handles keyboard shortcuts
+const KeyboardShortcutsHandler: React.FC = () => {
+  const navigate = useNavigate();
+
+  // Navigate to admin dashboard with Ctrl+Shift+A
+  useKeyboardShortcut('A', () => {
+    toast.info('Navigating to Admin Dashboard...');
+    navigate('/admin');
+  }, { ctrlKey: true, shiftKey: true });
+
+  // Show available shortcuts with Ctrl+Shift+?
+  useKeyboardShortcut('?', () => {
+    toast.info('Keyboard Shortcuts:\nCtrl+Shift+A: Go to Admin Dashboard\nCtrl+Shift+?: Show this help', {
+      duration: 5000,
+    });
+  }, { ctrlKey: true, shiftKey: true });
+
+  return null;
+};
+
 function App() {
+  useEffect(() => {
+    // Measure initial page load time
+    const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+    performanceMonitor.measurePageLoad('App', loadTime);
+    
+    // Initialize heatmap tracking
+    heatmapTracker.init();
+  }, []);
+
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <Router>
           <div className="flex flex-col min-h-screen">
+            {/* Skip links for accessibility */}
+            <a 
+              href="#main-content" 
+              className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-primary focus:text-primary-foreground z-50"
+            >
+              Skip to main content
+            </a>
+            <a 
+              href="#footer" 
+              className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-primary focus:text-primary-foreground z-50 mt-12"
+            >
+              Skip to footer
+            </a>
+            
+            <KeyboardShortcutsHandler />
             <Header />
-            <main className="flex-grow">
+            <main id="main-content" className="flex-grow">
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/rooms" element={<RoomsPage />} />

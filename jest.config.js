@@ -1,6 +1,6 @@
-module.exports = {
+export default {
   preset: 'ts-jest',
-  testEnvironment: 'jsdom',
+  testEnvironment: 'jest-environment-jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -9,5 +9,11 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.ts?(x)'],
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest'
+  },
+  extensionsToTreatAsEsm: ['.ts'],
+  globals: {
+    'ts-jest': {
+      useESM: true
+    }
   }
 };

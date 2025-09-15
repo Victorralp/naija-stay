@@ -9,11 +9,38 @@ import {
   LogIn, 
   LogOut, 
   Shield, 
-  Database 
+  Database,
+  Keyboard
 } from 'lucide-react';
+import { toast } from 'sonner';
+import CurrencySelector from '@/components/CurrencySelector';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
+
+  // Show keyboard shortcuts help
+  const showShortcutsHelp = () => {
+    toast.info(
+      <div>
+        <h3 className="font-bold mb-2">Keyboard Shortcuts</h3>
+        <ul className="list-disc pl-5 space-y-1">
+          <li>
+            <kbd className="px-2 py-1 bg-gray-100 border rounded">Ctrl</kbd> +{' '}
+            <kbd className="px-2 py-1 bg-gray-100 border rounded">Shift</kbd> +{' '}
+            <kbd className="px-2 py-1 bg-gray-100 border rounded">A</kbd> - Go to Admin Dashboard
+          </li>
+          <li>
+            <kbd className="px-2 py-1 bg-gray-100 border rounded">Ctrl</kbd> +{' '}
+            <kbd className="px-2 py-1 bg-gray-100 border rounded">Shift</kbd> +{' '}
+            <kbd className="px-2 py-1 bg-gray-100 border rounded">?</kbd> - Show this help
+          </li>
+        </ul>
+      </div>,
+      {
+        duration: 10000,
+      }
+    );
+  };
 
   return (
     <header className="bg-white shadow-md">
@@ -40,15 +67,25 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
+            <CurrencySelector />
             {user ? (
               <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={showShortcutsHelp}
+                  className="hidden md:flex items-center"
+                >
+                  <Keyboard className="h-4 w-4 mr-1" />
+                  <span className="text-xs">Shortcuts</span>
+                </Button>
                 <Link to="/profile">
                   <Button variant="ghost" size="sm">
                     <User className="h-4 w-4 mr-2" />
                     Profile
                   </Button>
                 </Link>
-                {user.email === 'admin@example.com' && (
+                {user.email === 'victorralph407@gmail.com' && (
                   <Link to="/admin">
                     <Button variant="ghost" size="sm">
                       <Shield className="h-4 w-4 mr-2" />

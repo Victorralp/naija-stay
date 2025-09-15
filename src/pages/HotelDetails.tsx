@@ -10,6 +10,8 @@ import { Loader2 } from 'lucide-react';
 import BookingForm from '@/components/BookingForm';
 import HotelGallery from '@/components/HotelGallery';
 import RoomDetails from '@/components/RoomDetails';
+import WeatherWidget from '@/components/WeatherWidget';
+import AvailabilityIndicator from '@/components/AvailabilityIndicator';
 
 const HotelDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -100,33 +102,45 @@ const HotelDetails = () => {
                 <span>{hotel.location}, {hotel.city}, {hotel.state}</span>
               </div>
             </div>
-            <motion.div 
-              className="flex items-center bg-secondary px-4 py-2 rounded-lg"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
-            >
-              <Star className="h-5 w-5 text-yellow-400 fill-current" />
-              <span className="ml-1 text-lg font-semibold">{hotel.rating}</span>
-              <span className="ml-1 text-gray-600">/ 5</span>
-            </motion.div>
+            <div className="flex flex-col items-end space-y-2">
+              <motion.div 
+                className="flex items-center bg-secondary px-4 py-2 rounded-lg"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
+              >
+                <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                <span className="ml-1 text-lg font-semibold">{hotel.rating}</span>
+                <span className="ml-1 text-gray-600">/ 5</span>
+              </motion.div>
+              <AvailabilityIndicator hotelId={hotel.id} />
+            </div>
           </div>
 
-          <Card className="mb-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <CardHeader>
-              <CardTitle className="text-2xl">About this hotel</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <motion.p 
-                className="text-gray-700 leading-relaxed"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                {hotel.description}
-              </motion.p>
-            </CardContent>
-          </Card>
+          {/* Weather Widget and Hotel Info */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div className="lg:col-span-2">
+              <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
+                <CardHeader>
+                  <CardTitle className="text-2xl">About this hotel</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <motion.p 
+                    className="text-gray-700 leading-relaxed"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    {hotel.description}
+                  </motion.p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div>
+              <WeatherWidget />
+            </div>
+          </div>
 
           {hotel.amenities && hotel.amenities.length > 0 && (
             <Card className="mb-6 shadow-lg hover:shadow-xl transition-shadow duration-300">

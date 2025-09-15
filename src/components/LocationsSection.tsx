@@ -85,6 +85,7 @@ const LocationsSection = () => {
                   src={location.image} 
                   alt={`${location.city} cityscape`}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/10 to-transparent" />
                 

@@ -6,33 +6,68 @@ import { Calendar, Gift, Mail, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { newsletterService } from "@/services/newsletterService";
 import { toast } from "sonner";
+import { analytics } from "@/utils/analytics";
+import { useNavigate } from "react-router-dom";
 
 const CTASection = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{name?: string, email?: string}>({});
+  const navigate = useNavigate();
+
+  const validateForm = () => {
+    const newErrors: {name?: string, email?: string} = {};
+    
+    if (!name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     
-    if (!email) {
-      toast.error("Please enter your email address");
-      setLoading(false);
+    if (!validateForm()) {
       return;
     }
+    
+    setLoading(true);
     
     const result = await newsletterService.subscribe(email, name);
     
     if (result.success) {
+      analytics.trackEvent({
+        category: 'Engagement',
+        action: 'Newsletter Signup',
+        label: 'CTA Section'
+      });
       toast.success(result.message);
       setName("");
       setEmail("");
+      setErrors({});
     } else {
       toast.error(result.message);
     }
     
     setLoading(false);
+  };
+
+  const handleBookNow = () => {
+    analytics.trackEvent({
+      category: 'Navigation',
+      action: 'Click CTA',
+      label: 'Book Your Stay Now'
+    });
+    navigate("/rooms");
   };
 
   return (
@@ -94,7 +129,12 @@ const CTASection = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="hero" size="lg" className="flex-1 sm:flex-none px-8">
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="flex-1 sm:flex-none px-8"
+                onClick={handleBookNow}
+              >
                 Book Your Stay Now
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -122,23 +162,36 @@ const CTASection = () => {
               {/* Newsletter Form */}
               <form onSubmit={handleSubscribe} className="space-y-4">
                 <div className="space-y-3">
-                  <Input 
-                    type="text" 
-                    placeholder="Enter your full name"
-                    className="w-full bg-background border border-input text-foreground placeholder:text-muted-foreground"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    disabled={loading}
-                  />
-                  <Input 
-                    type="email" 
-                    placeholder="Enter your email address"
-                    className="w-full bg-background border border-input text-foreground placeholder:text-muted-foreground"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={loading}
-                    required
-                  />
+                  <div>
+                    <Input 
+                      type="text" 
+                      placeholder="Enter your full name"
+                      className={`w-full bg-background border ${errors.name ? 'border-red-500' : 'border-input'} text-foreground placeholder:text-muted-foreground`}
+                      value={name}
+                      onChange={(e) => {
+                        setName(e.target.value);
+                        if (errors.name) setErrors({...errors, name: undefined});
+                      }}
+                      disabled={loading}
+                    />
+                    {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                  </div>
+                  
+                  <div>
+                    <Input 
+                      type="email" 
+                      placeholder="Enter your email address"
+                      className={`w-full bg-background border ${errors.email ? 'border-red-500' : 'border-input'} text-foreground placeholder:text-muted-foreground`}
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (errors.email) setErrors({...errors, email: undefined});
+                      }}
+                      disabled={loading}
+                      required
+                    />
+                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                  </div>
                 </div>
                 
                 <Button 

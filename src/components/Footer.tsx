@@ -7,16 +7,28 @@ import { toast } from "sonner";
 const Footer = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     
-    if (!email) {
-      toast.error("Please enter your email address");
-      setLoading(false);
+    if (!email.trim()) {
+      setError("Email is required");
       return;
     }
+    
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+    
+    setLoading(true);
+    setError("");
     
     const result = await newsletterService.subscribe(email);
     
@@ -25,6 +37,7 @@ const Footer = () => {
       setEmail("");
     } else {
       toast.error(result.message);
+      setError(result.message);
     }
     
     setLoading(false);
@@ -114,15 +127,21 @@ const Footer = () => {
               Subscribe to our newsletter for exclusive deals and travel tips
             </p>
             <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <input 
-                type="email" 
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-2 bg-background border border-input rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-                required
-              />
+              <div className="flex-grow">
+                <input 
+                  type="email" 
+                  placeholder="Enter your email"
+                  className={`w-full px-4 py-2 bg-background border ${error ? 'border-red-500' : 'border-input'} rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary`}
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError("");
+                  }}
+                  disabled={loading}
+                  required
+                />
+                {error && <p className="text-red-500 text-xs mt-1 text-left">{error}</p>}
+              </div>
               <Button 
                 variant="default" 
                 size="default"

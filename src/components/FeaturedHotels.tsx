@@ -16,20 +16,20 @@ const FeaturedHotels = () => {
     return (
       <section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Featured Hotels</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+          <div className="text-center mb-10 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4">Featured Hotels</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
               Discover our handpicked selection of premium accommodations
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="h-64 animate-pulse bg-muted">
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div className="h-4 bg-muted-foreground/20 rounded"></div>
-                    <div className="h-4 bg-muted-foreground/20 rounded w-3/4"></div>
-                    <div className="h-4 bg-muted-foreground/20 rounded w-1/2"></div>
+              <Card key={i} className="h-56 sm:h-64 animate-pulse bg-muted">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="h-3 sm:h-4 bg-muted-foreground/20 rounded"></div>
+                    <div className="h-3 sm:h-4 bg-muted-foreground/20 rounded w-3/4"></div>
+                    <div className="h-3 sm:h-4 bg-muted-foreground/20 rounded w-1/2"></div>
                   </div>
                 </CardContent>
               </Card>
@@ -48,20 +48,20 @@ const FeaturedHotels = () => {
     <section className="py-16 bg-muted/50">
       <div className="container mx-auto px-4">
         <motion.div 
-          className="text-center mb-12"
+          className="text-center mb-10 sm:mb-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl font-bold text-foreground mb-4">Featured Hotels</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4">Featured Hotels</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
             Discover our handpicked selection of premium accommodations
           </p>
         </motion.div>
-        
+      
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -79,15 +79,15 @@ const FeaturedHotels = () => {
             </motion.div>
           ))}
         </motion.div>
-        
+      
         <motion.div 
-          className="text-center mt-12"
+          className="text-center mt-10 sm:mt-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
           viewport={{ once: true }}
         >
-          <Button asChild size="lg" variant="outline">
+          <Button asChild size="lg" variant="outline" className="text-sm sm:text-base">
             <Link to="/hotels">View All Hotels</Link>
           </Button>
         </motion.div>
