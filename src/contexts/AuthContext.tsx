@@ -7,6 +7,7 @@ interface AuthContextType extends AuthState {
   register: (credentials: RegisterCredentials) => Promise<{success: boolean; message: string}>;
   signInWithGoogle: () => Promise<{success: boolean; message: string}>;
   logout: () => Promise<void>;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -123,7 +124,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     login,
     register,
     signInWithGoogle,
-    logout
+    logout,
+    setUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -259,21 +259,44 @@ const HeroSection = () => {
       
       {/* Stats */}
       <motion.div 
-        className="absolute bottom-4 md:bottom-10 left-1/2 transform -translate-x-1/2 z-10"
+        className="absolute bottom-0 left-0 right-0 flex justify-center z-10 pb-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 1.1 }}
       >
         <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-foreground bg-white/90 backdrop-blur-sm px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg">
-          <div className="text-center">
+          <div className="text-center cursor-pointer hover:text-primary transition-colors duration-300" 
+               onClick={() => {
+                 analytics.trackEvent({
+                   category: 'Navigation',
+                   action: 'Click Stat',
+                   label: 'Premium Hotels'
+                 });
+                 navigate("/rooms");
+               }}>
             <div className="text-xl md:text-2xl font-bold text-primary">50+</div>
             <div className="text-xs md:text-sm">Premium Hotels</div>
           </div>
-          <div className="text-center">
+          <div className="text-center cursor-pointer hover:text-primary transition-colors duration-300"
+               onClick={() => {
+                 analytics.trackEvent({
+                   category: 'Navigation',
+                   action: 'Click Stat',
+                   label: 'Happy Guests'
+                 });
+               }}>
             <div className="text-xl md:text-2xl font-bold text-primary">10K+</div>
             <div className="text-xs md:text-sm">Happy Guests</div>
           </div>
-          <div className="text-center">
+          <div className="text-center cursor-pointer hover:text-primary transition-colors duration-300"
+               onClick={() => {
+                 analytics.trackEvent({
+                   category: 'Navigation',
+                   action: 'Click Stat',
+                   label: 'Major Cities'
+                 });
+                 navigate("/rooms");
+               }}>
             <div className="text-xl md:text-2xl font-bold text-primary">3</div>
             <div className="text-xs md:text-sm">Major Cities</div>
           </div>

@@ -10,10 +10,10 @@ import { hotelService } from '@/services/hotelService';
 import { bookingService } from '@/services/bookingService';
 import { adminService } from '@/services/adminService';
 import { uploadImages, uploadVideos } from '@/services/storageService';
-import { PlusCircle, HotelIcon, Bed, Users, CreditCard, Edit, Trash2, Upload, Image as ImageIcon, Video, Calendar, CheckCircle, User, BarChart3, MessageCircle, Mail, Settings } from 'lucide-react';
+import { PlusCircle, HotelIcon, Bed, Users, CreditCard, Edit, Trash2, Upload, Image as ImageIcon, Video, Calendar, CheckCircle, User, BarChart3, MessageCircle, Mail, Settings, Eye, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import NewsletterManagement from '@/components/admin/NewsletterManagement';
 import ContactMessages from '@/components/admin/ContactMessages';
 
@@ -28,6 +28,7 @@ interface User {
 
 const AdminDashboard = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('hotels');
   const imageFileInputRef = useRef<HTMLInputElement>(null);
   const videoFileInputRef = useRef<HTMLInputElement>(null);
@@ -35,25 +36,25 @@ const AdminDashboard = () => {
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
 
   // Fetch hotels data
-  const { data: hotels, isLoading: hotelsLoading } = useQuery({
+  const { data: hotels, isLoading: hotelsLoading, isError: hotelsError } = useQuery({
     queryKey: ['admin-hotels'],
     queryFn: hotelService.getHotels,
   });
 
   // Fetch rooms data
-  const { data: rooms, isLoading: roomsLoading } = useQuery({
+  const { data: rooms, isLoading: roomsLoading, isError: roomsError } = useQuery({
     queryKey: ['admin-rooms'],
     queryFn: hotelService.getAvailableRooms,
   });
 
   // Fetch bookings data
-  const { data: bookings, isLoading: bookingsLoading } = useQuery({
+  const { data: bookings, isLoading: bookingsLoading, isError: bookingsError } = useQuery({
     queryKey: ['admin-bookings'],
     queryFn: bookingService.getAllBookings,
   });
 
   // Fetch users data
-  const { data: users, isLoading: usersLoading } = useQuery({
+  const { data: users, isLoading: usersLoading, isError: usersError } = useQuery({
     queryKey: ['admin-users'],
     queryFn: adminService.getAllUsers,
   });
@@ -198,13 +199,24 @@ const AdminDashboard = () => {
     }
   };
 
+  // Handle navigation to edit pages
+  const handleEditHotel = (hotelId: string) => {
+    navigate(`/admin/hotels/${hotelId}/edit`);
+  };
+
+  const handleEditRoom = (roomId: string) => {
+    navigate(`/admin/rooms/${roomId}/edit`);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add New Hotel
+        <Button asChild>
+          <Link to="/admin/hotels/new">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add New Hotel
+          </Link>
         </Button>
       </div>
 
@@ -344,6 +356,10 @@ const AdminDashboard = () => {
                 <div className="flex justify-center items-center h-32">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
+              ) : hotelsError ? (
+                <div className="text-center py-8 text-red-500">
+                  Error loading hotels. Please try again later.
+                </div>
               ) : (
                 <div className="space-y-4">
                   {hotels?.map((hotel: Hotel) => (
@@ -353,7 +369,7 @@ const AdminDashboard = () => {
                         <p className="text-sm text-gray-500">{hotel.city}, {hotel.state}</p>
                       </div>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => handleEditHotel(hotel.id)}>
                           <Edit className="h-4 w-4 mr-2" />
                           Edit
                         </Button>
@@ -371,7 +387,9 @@ const AdminDashboard = () => {
                   {hotels && hotels.length === 0 && (
                     <div className="text-center py-8">
                       <p className="text-gray-500">No hotels found</p>
-                      <Button className="mt-4">Add Your First Hotel</Button>
+                      <Button className="mt-4" asChild>
+                        <Link to="/admin/hotels/new">Add Your First Hotel</Link>
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -390,6 +408,10 @@ const AdminDashboard = () => {
                 <div className="flex justify-center items-center h-32">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
+              ) : roomsError ? (
+                <div className="text-center py-8 text-red-500">
+                  Error loading rooms. Please try again later.
+                </div>
               ) : (
                 <div className="space-y-4">
                   {rooms?.map((room: Room) => (
@@ -399,7 +421,7 @@ const AdminDashboard = () => {
                         <p className="text-sm text-gray-500">{room.type} - ₦{room.pricePerNight.toLocaleString()}/night</p>
                       </div>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => handleEditRoom(room.id)}>
                           <Edit className="h-4 w-4 mr-2" />
                           Edit
                         </Button>
@@ -417,7 +439,9 @@ const AdminDashboard = () => {
                   {rooms && rooms.length === 0 && (
                     <div className="text-center py-8">
                       <p className="text-gray-500">No rooms found</p>
-                      <Button className="mt-4">Add Your First Room</Button>
+                      <Button className="mt-4" asChild>
+                        <Link to="/admin/rooms/new">Add Your First Room</Link>
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -438,6 +462,10 @@ const AdminDashboard = () => {
               {bookingsLoading ? (
                 <div className="flex justify-center items-center h-32">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : bookingsError ? (
+                <div className="text-center py-8 text-red-500">
+                  Error loading bookings. Please try again later.
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -497,6 +525,7 @@ const AdminDashboard = () => {
                             asChild
                           >
                             <Link to={`/booking-confirmation/${booking.id}`}>
+                              <Eye className="h-4 w-4 mr-1" />
                               View Details
                             </Link>
                           </Button>
@@ -528,6 +557,10 @@ const AdminDashboard = () => {
               {usersLoading ? (
                 <div className="flex justify-center items-center h-32">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : usersError ? (
+                <div className="text-center py-8 text-red-500">
+                  Error loading users. Please try again later.
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -585,7 +618,13 @@ const AdminDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-                      <p className="text-gray-500">Booking trend chart would appear here</p>
+                      <div className="text-center">
+                        <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">Booking trend chart would appear here</p>
+                        <Button variant="outline" className="mt-4" asChild>
+                          <Link to="/admin/analytics">View Detailed Analytics</Link>
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -596,7 +635,13 @@ const AdminDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-                      <p className="text-gray-500">Revenue chart would appear here</p>
+                      <div className="text-center">
+                        <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">Revenue chart would appear here</p>
+                        <Button variant="outline" className="mt-4" asChild>
+                          <Link to="/admin/analytics">View Detailed Analytics</Link>
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -607,9 +652,14 @@ const AdminDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {hotels?.slice(0, 3).map((hotel: Hotel) => (
+                      {hotels?.slice(0, 3).map((hotel: Hotel, index: number) => (
                         <div key={hotel.id} className="flex justify-between items-center">
-                          <span className="font-medium">{hotel.name}</span>
+                          <div className="flex items-center">
+                            <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mr-2 text-xs">
+                              {index + 1}
+                            </span>
+                            <span className="font-medium">{hotel.name}</span>
+                          </div>
                           <span className="text-sm text-gray-500">₦{Math.floor(Math.random() * 1000000).toLocaleString()} revenue</span>
                         </div>
                       ))}
@@ -635,7 +685,7 @@ const AdminDashboard = () => {
                           <Mail className="h-5 w-5 text-blue-500 mr-2" />
                           <span>Newsletter Subscribers</span>
                         </div>
-                        <span className="font-semibold">1,240</span>
+                        <span className="font-semibold">{users?.length || 0}</span>
                       </div>
                     </div>
                   </CardContent>

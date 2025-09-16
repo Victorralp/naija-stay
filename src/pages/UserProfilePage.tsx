@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { bookingService } from '@/services/bookingService';
 import { hotelService } from '@/services/hotelService';
+import { userService } from '@/services/userService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   Calendar, 
   MapPin, 
@@ -18,16 +21,25 @@ import {
   CreditCard,
   User,
   Mail,
-  Phone
+  Phone,
+  Save,
+  X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '@/utils/formatters';
+import { toast } from 'sonner';
 
 const UserProfilePage = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('profile');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    phoneNumber: ''
+  });
 
   // Fetch user bookings
   const { data: bookings, isLoading: bookingsLoading } = useQuery({
@@ -41,6 +53,16 @@ const UserProfilePage = () => {
     queryKey: ['hotels'],
     queryFn: hotelService.getHotels,
   });
+
+  // Initialize edit form when user data is available
+  useEffect(() => {
+    if (user) {
+      setEditForm({
+        name: user.displayName || user.name || '',
+        phoneNumber: user.phoneNumber || ''
+      });
+    }
+  }, [user]);
 
   const getHotelName = (hotelId: string) => {
     const hotel = hotels?.find(h => h.id === hotelId);
@@ -59,6 +81,61 @@ const UserProfilePage = () => {
         return <Badge className="bg-blue-100 text-blue-800"><CheckCircle className="w-3 h-3 mr-1" /> Completed</Badge>;
       default:
         return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
+    }
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    // Reset form to current user data
+    if (user) {
+      setEditForm({
+        name: user.displayName || user.name || '',
+        phoneNumber: user.phoneNumber || ''
+      });
+    }
+  };
+
+  const handleFormChange = (field: string, value: string) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+
+    try {
+      const result = await userService.updateUserProfile(user.id, {
+        name: editForm.name,
+        displayName: editForm.name,
+        phoneNumber: editForm.phoneNumber
+      });
+
+      if (result.success) {
+        // Update the user in context
+        setUser({
+          ...user,
+          name: editForm.name,
+          displayName: editForm.name,
+          phoneNumber: editForm.phoneNumber
+        });
+
+        // Invalidate and refetch user data
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+
+        toast.success(result.message);
+        setIsEditing(false);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error('Failed to update profile. Please try again.');
+      console.error('Profile update error:', error);
     }
   };
 
@@ -139,49 +216,109 @@ const UserProfilePage = () => {
               >
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <User className="w-5 h-5 mr-2" />
-                      Personal Information
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <User className="w-5 h-5 mr-2" />
+                        Personal Information
+                      </div>
+                      {!isEditing && (
+                        <Button onClick={handleEditClick} variant="outline" size="sm">
+                          Edit Profile
+                        </Button>
+                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-500">Full Name</label>
-                        <div className="flex items-center p-3 bg-muted rounded-lg">
-                          <User className="w-4 h-4 mr-2 text-gray-500" />
-                          <span>{user.displayName || 'Not provided'}</span>
+                    {isEditing ? (
+                      // Edit Form
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="name">Full Name</Label>
+                            <Input
+                              id="name"
+                              value={editForm.name}
+                              onChange={(e) => handleFormChange('name', e.target.value)}
+                              placeholder="Enter your full name"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="email">Email Address</Label>
+                            <Input
+                              id="email"
+                              value={user.email || ''}
+                              disabled
+                              className="bg-muted"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="phoneNumber">Phone Number</Label>
+                            <Input
+                              id="phoneNumber"
+                              value={editForm.phoneNumber}
+                              onChange={(e) => handleFormChange('phoneNumber', e.target.value)}
+                              placeholder="Enter your phone number"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Member Since</Label>
+                            <div className="flex items-center p-3 bg-muted rounded-lg">
+                              <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                              <span>{user.metadata?.creationTime ? format(new Date(user.metadata.creationTime), 'MMM d, yyyy') : 'N/A'}</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-end space-x-3 pt-4 border-t">
+                          <Button variant="outline" onClick={handleCancelEdit}>
+                            <X className="w-4 h-4 mr-2" />
+                            Cancel
+                          </Button>
+                          <Button onClick={handleSaveProfile}>
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Changes
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-500">Email Address</label>
-                        <div className="flex items-center p-3 bg-muted rounded-lg">
-                          <Mail className="w-4 h-4 mr-2 text-gray-500" />
-                          <span>{user.email}</span>
+                    ) : (
+                      // View Mode
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-500">Full Name</label>
+                          <div className="flex items-center p-3 bg-muted rounded-lg">
+                            <User className="w-4 h-4 mr-2 text-gray-500" />
+                            <span>{user.displayName || user.name || 'Not provided'}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-500">Email Address</label>
+                          <div className="flex items-center p-3 bg-muted rounded-lg">
+                            <Mail className="w-4 h-4 mr-2 text-gray-500" />
+                            <span>{user.email}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-500">Phone Number</label>
+                          <div className="flex items-center p-3 bg-muted rounded-lg">
+                            <Phone className="w-4 h-4 mr-2 text-gray-500" />
+                            <span>{user.phoneNumber || 'Not provided'}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-500">Member Since</label>
+                          <div className="flex items-center p-3 bg-muted rounded-lg">
+                            <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                            <span>{user.metadata?.creationTime ? format(new Date(user.metadata.creationTime), 'MMM d, yyyy') : 'N/A'}</span>
+                          </div>
                         </div>
                       </div>
-                      
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-500">Phone Number</label>
-                        <div className="flex items-center p-3 bg-muted rounded-lg">
-                          <Phone className="w-4 h-4 mr-2 text-gray-500" />
-                          <span>{user.phoneNumber || 'Not provided'}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-500">Member Since</label>
-                        <div className="flex items-center p-3 bg-muted rounded-lg">
-                          <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-                          <span>{user.metadata?.creationTime ? format(new Date(user.metadata.creationTime), 'MMM d, yyyy') : 'N/A'}</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="pt-4 border-t">
-                      <Button>Edit Profile</Button>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>

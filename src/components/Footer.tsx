@@ -3,6 +3,7 @@ import { MapPin, Phone, Mail, Facebook, Twitter, Instagram } from "lucide-react"
 import { useState } from "react";
 import { newsletterService } from "@/services/newsletterService";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
@@ -30,21 +31,32 @@ const Footer = () => {
     setLoading(true);
     setError("");
     
-    const result = await newsletterService.subscribe(email);
-    
-    if (result.success) {
-      toast.success(result.message);
-      setEmail("");
-    } else {
-      toast.error(result.message);
-      setError(result.message);
+    try {
+      const result = await newsletterService.subscribe(email);
+      
+      if (result.success) {
+        toast.success(result.message);
+        setEmail("");
+      } else {
+        toast.error(result.message);
+        setError(result.message);
+      }
+    } catch (err) {
+      const errorMessage = "Failed to subscribe. Please try again.";
+      toast.error(errorMessage);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
+  };
+
+  const handleSocialClick = (platform: string) => {
+    toast.info(`Follow us on ${platform} for updates!`);
+    // In a real app, this would redirect to the social media page
   };
 
   return (
-    <footer className="bg-muted text-foreground pt-16 pb-8">
+    <footer id="footer" className="bg-muted text-foreground pt-16 pb-8 w-full">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
@@ -54,19 +66,37 @@ const Footer = () => {
               <div className="w-8 h-8 gradient-hero rounded-lg flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-sm">NH</span>
               </div>
-              <span className="text-xl font-bold">Naija Hotels</span>
+              <Link to="/" className="text-xl font-bold hover:text-primary transition-colors">Naija Hotels</Link>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed">
               Experience the finest Nigerian hospitality with our premium hotel collection across Lagos, Abuja, and Port Harcourt.
             </p>
             <div className="flex space-x-3">
-              <Button variant="outline" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-accent">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="text-muted-foreground hover:text-foreground hover:bg-accent"
+                onClick={() => handleSocialClick("Facebook")}
+                aria-label="Facebook"
+              >
                 <Facebook className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-accent">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="text-muted-foreground hover:text-foreground hover:bg-accent"
+                onClick={() => handleSocialClick("Twitter")}
+                aria-label="Twitter"
+              >
                 <Twitter className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-accent">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="text-muted-foreground hover:text-foreground hover:bg-accent"
+                onClick={() => handleSocialClick("Instagram")}
+                aria-label="Instagram"
+              >
                 <Instagram className="w-4 h-4" />
               </Button>
             </div>
@@ -76,11 +106,11 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Quick Links</h3>
             <ul className="space-y-2">
-              <li><a href="#home" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Home</a></li>
-              <li><a href="#hotels" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Hotels</a></li>
-              <li><a href="#about" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">About Us</a></li>
-              <li><a href="#contact" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Contact</a></li>
-              <li><a href="#booking" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Booking</a></li>
+              <li><Link to="/" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Home</Link></li>
+              <li><Link to="/rooms" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Rooms</Link></li>
+              <li><Link to="/about" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">About Us</Link></li>
+              <li><Link to="/contact" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Contact</Link></li>
+              <li><Link to="/enhanced-booking" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Booking</Link></li>
             </ul>
           </div>
 
@@ -88,11 +118,11 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Our Locations</h3>
             <ul className="space-y-2">
-              <li><a href="#lagos" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Lagos Hotels</a></li>
-              <li><a href="#abuja" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Abuja Hotels</a></li>
-              <li><a href="#port-harcourt" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Port Harcourt Hotels</a></li>
-              <li><a href="#ibadan" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Ibadan Hotels</a></li>
-              <li><a href="#kano" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Kano Hotels</a></li>
+              <li><a href="/#lagos" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Lagos Hotels</a></li>
+              <li><a href="/#abuja" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Abuja Hotels</a></li>
+              <li><a href="/#port-harcourt" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Port Harcourt Hotels</a></li>
+              <li><a href="/#ibadan" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Ibadan Hotels</a></li>
+              <li><a href="/#kano" className="text-muted-foreground hover:text-foreground transition-smooth text-sm">Kano Hotels</a></li>
             </ul>
           </div>
 
@@ -147,6 +177,7 @@ const Footer = () => {
                 size="default"
                 type="submit"
                 disabled={loading}
+                className="whitespace-nowrap"
               >
                 {loading ? "Subscribing..." : "Subscribe"}
               </Button>
@@ -158,10 +189,10 @@ const Footer = () => {
         <div className="border-t border-border pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
             <p>&copy; 2024 Naija Hotels. All rights reserved.</p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#privacy" className="hover:text-foreground transition-smooth">Privacy Policy</a>
-              <a href="#terms" className="hover:text-foreground transition-smooth">Terms of Service</a>
-              <a href="#cookies" className="hover:text-foreground transition-smooth">Cookie Policy</a>
+            <div className="flex flex-wrap justify-center gap-4 md:gap-6 mt-4 md:mt-0">
+              <Link to="/#privacy" className="hover:text-foreground transition-smooth">Privacy Policy</Link>
+              <Link to="/#terms" className="hover:text-foreground transition-smooth">Terms of Service</Link>
+              <Link to="/#cookies" className="hover:text-foreground transition-smooth">Cookie Policy</Link>
             </div>
           </div>
         </div>

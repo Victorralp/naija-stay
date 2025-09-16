@@ -19,6 +19,21 @@ import SeedDataPage from './pages/SeedDataPage';
 import AboutUsPage from './pages/AboutUsPage';
 import NotFound from './pages/NotFound';
 import BookingConfirmationPage from './pages/BookingConfirmationPage';
+import NewsletterManagementPage from './pages/NewsletterManagementPage';
+import ContactMessagesPage from './pages/ContactMessagesPage';
+import HotelManagementPage from './pages/HotelManagementPage';
+import RoomManagementPage from './pages/RoomManagementPage';
+import BookingManagementPage from './pages/BookingManagementPage';
+import UserManagementPage from './pages/UserManagementPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import MediaManagementPage from './pages/MediaManagementPage';
+import FAQManagementPage from './pages/FAQManagementPage';
+import SettingsPage from './pages/SettingsPage';
+import ReportsPage from './pages/ReportsPage';
+import EditHotelPage from './pages/EditHotelPage';
+import EditRoomPage from './pages/EditRoomPage';
+import NewHotelPage from './pages/NewHotelPage';
+import NewRoomPage from './pages/NewRoomPage';
 import { useKeyboardShortcut } from './hooks/useKeyboardShortcut';
 import { toast } from 'sonner';
 import { performanceMonitor } from './utils/performance';
@@ -87,6 +102,21 @@ function App() {
                 <Route path="/booking-confirmation/:bookingId" element={<BookingConfirmationPage />} />
                 <Route path="/profile" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/analytics" element={<ProtectedRoute requireAdmin><AnalyticsPage /></ProtectedRoute>} />
+                <Route path="/admin/newsletter" element={<ProtectedRoute requireAdmin><NewsletterManagementPage /></ProtectedRoute>} />
+                <Route path="/admin/contact-messages" element={<ProtectedRoute requireAdmin><ContactMessagesPage /></ProtectedRoute>} />
+                <Route path="/admin/hotels" element={<ProtectedRoute requireAdmin><HotelManagementPage /></ProtectedRoute>} />
+                <Route path="/admin/hotels/new" element={<ProtectedRoute requireAdmin><NewHotelPage /></ProtectedRoute>} />
+                <Route path="/admin/hotels/:hotelId/edit" element={<ProtectedRoute requireAdmin><EditHotelPage /></ProtectedRoute>} />
+                <Route path="/admin/rooms" element={<ProtectedRoute requireAdmin><RoomManagementPage /></ProtectedRoute>} />
+                <Route path="/admin/rooms/new" element={<ProtectedRoute requireAdmin><NewRoomPage /></ProtectedRoute>} />
+                <Route path="/admin/rooms/:roomId/edit" element={<ProtectedRoute requireAdmin><EditRoomPage /></ProtectedRoute>} />
+                <Route path="/admin/bookings" element={<ProtectedRoute requireAdmin><BookingManagementPage /></ProtectedRoute>} />
+                <Route path="/admin/users" element={<ProtectedRoute requireAdmin><UserManagementPage /></ProtectedRoute>} />
+                <Route path="/admin/media" element={<ProtectedRoute requireAdmin><MediaManagementPage /></ProtectedRoute>} />
+                <Route path="/admin/faq" element={<ProtectedRoute requireAdmin><FAQManagementPage /></ProtectedRoute>} />
+                <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><SettingsPage /></ProtectedRoute>} />
+                <Route path="/admin/reports" element={<ProtectedRoute requireAdmin><ReportsPage /></ProtectedRoute>} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/about" element={<AboutUsPage />} />
