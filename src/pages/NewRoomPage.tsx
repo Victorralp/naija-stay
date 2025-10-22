@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,13 +7,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { hotelService } from '@/services/hotelService';
-import { Upload, ArrowLeft } from 'lucide-react';
+import { uploadImages } from '@/services/storageService';
+import { Upload, ArrowLeft, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 
 const NewRoomPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     hotelId: '',
     name: '',
@@ -24,6 +26,9 @@ const NewRoomPage = () => {
     amenities: '',
     available: true
   });
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   // Fetch hotels for the hotel selection dropdown
   const { data: hotels, isLoading: hotelsLoading } = useQuery({
@@ -48,9 +53,55 @@ const NewRoomPage = () => {
     }));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const fileArray = Array.from(files);
+      setImages(fileArray);
+      
+      // Generate previews
+      const previews = fileArray.map(file => URL.createObjectURL(file));
+      setImagePreviews(previews);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setImages(newImages);
+    
+    const newPreviews = [...imagePreviews];
+    URL.revokeObjectURL(newPreviews[index]);
+    newPreviews.splice(index, 1);
+    setImagePreviews(newPreviews);
+  };
+
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   const handleAddRoom = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUploading(true);
+    
     try {
+      let imageUrls: string[] = [];
+      
+      // Upload images if any
+      if (images.length > 0) {
+        try {
+          imageUrls = await uploadImages(images, 'room-images');
+          toast.success(`${images.length} image(s) uploaded successfully`);
+        } catch (error) {
+          toast.error('Failed to upload images');
+          console.error('Image upload error:', error);
+          setUploading(false);
+          return;
+        }
+      }
+      
       await hotelService.addRoom({
         hotelId: formData.hotelId,
         name: formData.name,
@@ -59,16 +110,22 @@ const NewRoomPage = () => {
         capacity: Number(formData.capacity),
         pricePerNight: Number(formData.pricePerNight),
         amenities: formData.amenities.split(',').map(item => item.trim()).filter(item => item),
-        images: [],
+        images: imageUrls,
         available: formData.available
       });
       
       queryClient.invalidateQueries({ queryKey: ['admin-rooms'] });
       toast.success('Room added successfully');
+      
+      // Clean up object URLs
+      imagePreviews.forEach(url => URL.revokeObjectURL(url));
+      
       navigate('/admin/rooms');
     } catch (error) {
       toast.error('Failed to add room');
       console.error('Add room error:', error);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -210,7 +267,9 @@ const NewRoomPage = () => {
             </div>
             
             <div className="flex flex-wrap gap-3 pt-4">
-              <Button type="submit">Add Room</Button>
+              <Button type="submit" disabled={uploading}>
+                {uploading ? 'Adding Room...' : 'Add Room'}
+              </Button>
               <Button type="button" variant="outline" asChild>
                 <Link to="/admin/rooms">Cancel</Link>
               </Button>
@@ -224,19 +283,59 @@ const NewRoomPage = () => {
           <CardTitle>Media Management</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8">
-            <Upload className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium mb-2">Upload Room Images</h3>
-            <p className="text-sm text-gray-500 mb-4">
-              Upload images to showcase your room
-            </p>
-            <Button variant="outline">
-              <Upload className="mr-2 h-4 w-4" />
-              Select Images
-            </Button>
-            <p className="text-xs text-gray-500 mt-3">
-              PNG, JPG, GIF up to 10MB
-            </p>
+          <div className="space-y-4">
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8">
+              <Upload className="h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium mb-2">Upload Room Images</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Upload images to showcase your room
+              </p>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={triggerFileInput}
+                disabled={uploading}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Select Images
+              </Button>
+              <Input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                multiple
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+              <p className="text-xs text-gray-500 mt-3">
+                PNG, JPG, GIF up to 10MB
+              </p>
+            </div>
+            
+            {/* Image previews */}
+            {imagePreviews.length > 0 && (
+              <div>
+                <h3 className="text-md font-medium mb-2">Selected Images</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative group">
+                      <img 
+                        src={preview} 
+                        alt={`Preview ${index + 1}`} 
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

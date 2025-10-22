@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Contact Messages</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <h1>Test Contact Messages</h1>
+    <button onclick="addTestMessage()">Add Test Message</button>
+    <div id="result"></div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBkX6BgSq7O4f2s8D9Jx8dsS50cRzU5s5E",
+            authDomain: "naija-stay-book.firebaseapp.com",
+            projectId: "naija-stay-book",
+            storageBucket: "naija-stay-book.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef1234567890abcdef"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        async function addTestMessage() {
+            try {
+                const docRef = await db.collection('contactMessages').add({
+                    name: 'Test User',
+                    email: 'test@example.com',
+                    message: 'This is a test message to verify that contact messages are working properly.',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'unread'
+                });
+                
+                document.getElementById('result').innerHTML = 'Test message added with ID: ' + docRef.id;
+            } catch (error) {
+                console.error('Error adding test message:', error);
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -17,6 +17,7 @@ import Footer from './components/Footer';
 import FirebaseSetupGuide from './pages/FirebaseSetupGuide';
 import SeedDataPage from './pages/SeedDataPage';
 import AboutUsPage from './pages/AboutUsPage';
+import SpecialOffersPage from './pages/SpecialOffersPage';
 import NotFound from './pages/NotFound';
 import BookingConfirmationPage from './pages/BookingConfirmationPage';
 import NewsletterManagementPage from './pages/NewsletterManagementPage';
@@ -120,6 +121,7 @@ function App() {
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/about" element={<AboutUsPage />} />
+                <Route path="/special-offers" element={<SpecialOffersPage />} />
                 <Route path="/seed-data" element={<SeedDataPage />} />
                 <Route path="/firebase-setup" element={<FirebaseSetupGuide />} />
                 <Route path="*" element={<NotFound />} />

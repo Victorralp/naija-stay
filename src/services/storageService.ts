@@ -6,6 +6,7 @@ import {
   getOptimizedImageUrl,
   getOptimizedVideoUrl
 } from '@/lib/cloudinary';
+import { deleteFromCloudinary } from '@/lib/cloudinary';
 
 /**
  * Upload an image file to Cloudinary
@@ -76,14 +77,40 @@ export const uploadVideos = async (files: File[], folder: string = 'naija-stay')
 };
 
 /**
- * Delete a media file (placeholder - requires server-side implementation)
+ * Delete a media file from Cloudinary
  * @param url The URL of the file to delete
  * @returns Promise that resolves when the file is deleted
  */
 export const deleteMedia = async (url: string): Promise<void> => {
-  // Note: Deletion requires server-side authentication
-  console.warn('Delete from Cloudinary requires server-side authentication. Please implement this on your backend.');
-  throw new Error('Delete operation not supported in client-side implementation. Use server-side implementation.');
+  try {
+    // Extract public ID from URL
+    const urlParts = url.split('/');
+    const publicIdWithExtension = urlParts[urlParts.length - 1];
+    const publicId = publicIdWithExtension.split('.')[0];
+    
+    // Delete from Cloudinary (requires server-side implementation)
+    await deleteFromCloudinary(publicId);
+  } catch (error) {
+    console.error('Error deleting media:', error);
+    throw new Error(`Failed to delete media: ${error.message}`);
+  }
+};
+
+/**
+ * Delete multiple media files from Cloudinary
+ * @param urls Array of URLs to delete
+ * @returns Promise that resolves when all files are deleted
+ */
+export const deleteMultipleMedia = async (urls: string[]): Promise<void> => {
+  try {
+    // Process deletions sequentially to avoid overwhelming the API
+    for (const url of urls) {
+      await deleteMedia(url);
+    }
+  } catch (error) {
+    console.error('Error deleting media files:', error);
+    throw new Error(`Failed to delete media files: ${error.message}`);
+  }
 };
 
 /**

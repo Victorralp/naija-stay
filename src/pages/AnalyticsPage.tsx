@@ -9,6 +9,7 @@ import { adminService } from '@/services/adminService';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Eye } from 'lucide-react';
 import { format, subDays, subMonths, subYears } from 'date-fns';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 
 // Define types for our analytics data
 interface BookingTrend {
@@ -53,8 +54,8 @@ const AnalyticsPage = () => {
   }, 0) || 0;
 
   // Calculate occupancy rate (simplified)
-  const occupancyRate = bookings?.filter(b => b.status === 'confirmed').length || 0;
-  const occupancyPercentage = totalBookings > 0 ? Math.round((occupancyRate / totalBookings) * 100) : 0;
+  const confirmedBookings = bookings?.filter(b => b.status === 'confirmed').length || 0;
+  const occupancyPercentage = totalBookings > 0 ? Math.round((confirmedBookings / totalBookings) * 100) : 0;
 
   // Filter bookings based on date range
   const filterBookingsByDate = (bookings: any[] | undefined, range: '7d' | '30d' | '90d' | '1y') => {
@@ -143,6 +144,142 @@ const AnalyticsPage = () => {
     alert('Export functionality would be implemented here');
   };
 
+  // Booking Trends Chart Component
+  const BookingTrendsChart = () => {
+    if (bookingTrends.length === 0) {
+      return (
+        <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg">
+          <div className="text-center">
+            <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No booking data available for the selected period</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={bookingTrends}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" />
+          <YAxis yAxisId="left" />
+          <YAxis yAxisId="right" orientation="right" />
+          <Tooltip 
+            formatter={(value, name) => {
+              if (name === 'revenue') {
+                return [`₦${Number(value).toLocaleString()}`, 'Revenue'];
+              }
+              return [value, 'Bookings'];
+            }}
+          />
+          <Bar yAxisId="left" dataKey="count" fill="#3b82f6" name="Bookings" />
+          <Bar yAxisId="right" dataKey="revenue" fill="#10b981" name="Revenue" />
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  };
+
+  // Revenue Overview Chart Component
+  const RevenueOverviewChart = () => {
+    if (revenueData.length === 0) {
+      return (
+        <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg">
+          <div className="text-center">
+            <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No revenue data available</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={revenueData.slice(-12)}> {/* Last 12 months */}
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
+          <YAxis />
+          <Tooltip formatter={(value) => [`₦${Number(value).toLocaleString()}`, 'Revenue']} />
+          <Area 
+            type="monotone" 
+            dataKey="amount" 
+            stroke="#10b981" 
+            fill="#10b981" 
+            fillOpacity={0.2}
+            name="Revenue"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    );
+  };
+
+  // Popular Hotels Chart Component
+  const PopularHotelsChart = () => {
+    if (!hotels || !bookings) {
+      return (
+        <div className="flex items-center justify-center h-80">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      );
+    }
+
+    // Calculate revenue by hotel
+    const hotelData = hotels.map(hotel => {
+      const hotelBookings = bookings.filter(booking => 
+        booking.hotelId === hotel.id && booking.status === 'confirmed'
+      );
+      
+      const revenue = hotelBookings.reduce((sum, booking) => sum + booking.totalPrice, 0);
+      const bookingCount = hotelBookings.length;
+      
+      return {
+        id: hotel.id,
+        name: hotel.name,
+        revenue,
+        bookings: bookingCount
+      };
+    })
+    .filter(hotel => hotel.revenue > 0)
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 5)
+    .map(hotel => ({
+      ...hotel,
+      name: hotel.name.length > 20 ? `${hotel.name.substring(0, 20)}...` : hotel.name
+    }));
+
+    if (hotelData.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-80">
+          <p className="text-gray-500">No hotel data available</p>
+        </div>
+      );
+    }
+
+    const COLORS = ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe'];
+
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={hotelData}
+            cx="50%"
+            cy="50%"
+            labelLine={true}
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="revenue"
+            nameKey="name"
+            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+          >
+            {hotelData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip formatter={(value) => [`₦${Number(value).toLocaleString()}`, 'Revenue']} />
+        </PieChart>
+      </ResponsiveContainer>
+    );
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
@@ -203,7 +340,7 @@ const AnalyticsPage = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -274,27 +411,8 @@ const AnalyticsPage = () => {
               Booking Trends
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            {bookingTrends.length > 0 ? (
-              <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg">
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">Interactive booking trend chart</p>
-                    <p className="text-sm text-gray-400 mt-2">
-                      Showing {bookingTrends.length} data points for the selected period
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg">
-                <div className="text-center">
-                  <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No booking data available for the selected period</p>
-                </div>
-              </div>
-            )}
+          <CardContent className="h-80">
+            <BookingTrendsChart />
           </CardContent>
         </Card>
         
@@ -305,27 +423,8 @@ const AnalyticsPage = () => {
               Revenue Overview
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            {revenueData.length > 0 ? (
-              <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg">
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">Revenue analytics chart</p>
-                    <p className="text-sm text-gray-400 mt-2">
-                      Showing {revenueData.length} months of revenue data
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg">
-                <div className="text-center">
-                  <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No revenue data available</p>
-                </div>
-              </div>
-            )}
+          <CardContent className="h-80">
+            <RevenueOverviewChart />
           </CardContent>
         </Card>
       </div>
@@ -338,26 +437,8 @@ const AnalyticsPage = () => {
             Popular Hotels
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {hotels?.slice(0, 5).map((hotel, index) => (
-              <div key={hotel.id} className="flex justify-between items-center p-4 border rounded-lg">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-                    <span className="text-primary font-bold">{index + 1}</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{hotel.name}</h3>
-                    <p className="text-sm text-gray-500">{hotel.city}, {hotel.state}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">₦{Math.floor(Math.random() * 1000000).toLocaleString()} revenue</p>
-                  <p className="text-sm text-gray-500">{Math.floor(Math.random() * 100)} bookings</p>
-                </div>
-              </div>
-            ))}
-          </div>
+        <CardContent className="h-80">
+          <PopularHotelsChart />
         </CardContent>
       </Card>
     </div>

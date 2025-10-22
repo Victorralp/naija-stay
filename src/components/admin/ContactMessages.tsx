@@ -68,12 +68,8 @@ const ContactMessages: React.FC = () => {
     if (!selectedMessage || !replyMessage) return;
     
     try {
-      // In a real implementation, you would send the reply email and save it to Firestore
-      console.log('Sending reply:', { 
-        to: selectedMessage.email, 
-        message: replyMessage,
-        originalMessage: selectedMessage 
-      });
+      // Send the reply
+      await adminService.sendContactMessageReply(selectedMessage.id, replyMessage);
       
       // Update status to replied
       await handleMessageStatusUpdate(selectedMessage.id, 'replied');
@@ -150,7 +146,9 @@ const ContactMessages: React.FC = () => {
       </Card>
 
       {/* Message Detail Dialog */}
-      <Dialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>
+      <Dialog open={!!selectedMessage} onOpenChange={(open) => {
+        if (!open) setSelectedMessage(null);
+      }}>
         <DialogContent className="max-w-2xl max-h-[80vh]">
           {selectedMessage && (
             <>

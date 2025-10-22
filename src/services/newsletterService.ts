@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, addDoc, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 
 interface NewsletterSubscription {
   id?: string;
@@ -16,6 +16,15 @@ export const newsletterService = {
    */
   async subscribe(email: string, name?: string): Promise<{ success: boolean; message: string }> {
     try {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return {
+          success: false,
+          message: 'Please enter a valid email address.'
+        };
+      }
+
       // Check if email is already subscribed
       const q = query(
         collection(db, NEWSLETTER_COLLECTION), 
@@ -44,12 +53,26 @@ export const newsletterService = {
         success: true,
         message: 'Successfully subscribed to our newsletter!'
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error subscribing to newsletter:', error);
-      return {
-        success: false,
-        message: 'Failed to subscribe. Please try again later.'
-      };
+      
+      // Provide more specific error messages
+      if (error.code === 'permission-denied') {
+        return {
+          success: false,
+          message: 'Subscription failed due to permissions. Please contact support.'
+        };
+      } else if (error.code === 'unavailable') {
+        return {
+          success: false,
+          message: 'Service temporarily unavailable. Please try again later.'
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Failed to subscribe. Please try again later.'
+        };
+      }
     }
   },
 

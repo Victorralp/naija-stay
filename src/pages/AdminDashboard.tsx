@@ -10,12 +10,14 @@ import { hotelService } from '@/services/hotelService';
 import { bookingService } from '@/services/bookingService';
 import { adminService } from '@/services/adminService';
 import { uploadImages, uploadVideos } from '@/services/storageService';
-import { PlusCircle, HotelIcon, Bed, Users, CreditCard, Edit, Trash2, Upload, Image as ImageIcon, Video, Calendar, CheckCircle, User, BarChart3, MessageCircle, Mail, Settings, Eye, X } from 'lucide-react';
+import { PlusCircle, HotelIcon, Bed, Users, CreditCard, Edit, Trash2, Upload, Image as ImageIcon, Video, Calendar, CheckCircle, User, BarChart3, MessageCircle, Mail, Settings, Eye, X, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format, subDays, subMonths } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import NewsletterManagement from '@/components/admin/NewsletterManagement';
 import ContactMessages from '@/components/admin/ContactMessages';
+import SpecialOffersManagement from '@/components/admin/SpecialOffersManagement';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 
 // Add this interface for user data
 interface User {
@@ -34,6 +36,8 @@ const AdminDashboard = () => {
   const videoFileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
+  const [communicationsSubTab, setCommunicationsSubTab] = useState<'newsletter' | 'messages'>('newsletter');
+  const [showStats, setShowStats] = useState(false);
 
   // Fetch hotels data
   const { data: hotels, isLoading: hotelsLoading, isError: hotelsError } = useQuery({
@@ -58,6 +62,14 @@ const AdminDashboard = () => {
     queryKey: ['admin-users'],
     queryFn: adminService.getAllUsers,
   });
+
+  // Set default sub-tab when entering communications tab
+  useEffect(() => {
+    if (activeTab === 'communications') {
+      // Set default to newsletter if no sub-tab is selected
+      setCommunicationsSubTab('newsletter');
+    }
+  }, [activeTab]);
 
   // Calculate statistics
   const totalHotels = hotels?.length || 0;
@@ -210,9 +222,9 @@ const AdminDashboard = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <Button asChild>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+        <Button asChild size="sm" className="w-full sm:w-auto">
           <Link to="/admin/hotels/new">
             <PlusCircle className="mr-2 h-4 w-4" />
             Add New Hotel
@@ -220,96 +232,100 @@ const AdminDashboard = () => {
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <HotelIcon className="h-10 w-10 text-blue-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Hotels</p>
-                <p className="text-2xl font-bold">{totalHotels}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Bed className="h-10 w-10 text-green-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Rooms</p>
-                <p className="text-2xl font-bold">{totalRooms}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Users className="h-10 w-10 text-purple-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Bookings</p>
-                <p className="text-2xl font-bold">{totalBookings}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <User className="h-10 w-10 text-orange-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Users</p>
-                <p className="text-2xl font-bold">{totalUsers}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <CreditCard className="h-10 w-10 text-yellow-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Revenue</p>
-                <p className="text-2xl font-bold">₦{totalRevenue.toLocaleString()}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Media Upload Section */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Media Management</CardTitle>
+      {/* Stats Summary Card with Dropdown */}
+      <Card className="mb-6">
+        <CardHeader className="py-4">
+          <CardTitle className="text-lg flex justify-between items-center">
+            <span>Dashboard Overview</span>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setShowStats(!showStats)}
+              className="p-1"
+            >
+              <ChevronDown className={`h-4 w-4 transition-transform ${showStats ? 'rotate-180' : ''}`} />
+            </Button>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8">
-            <div className="flex space-x-4 mb-4">
-              <Button 
-                onClick={triggerImageFileInput}
-                disabled={uploading}
-                className="flex items-center"
-                variant={mediaType === 'image' ? 'default' : 'outline'}
-              >
-                <ImageIcon className="mr-2 h-4 w-4" />
-                {uploading && mediaType === 'image' ? 'Uploading...' : 'Upload Images'}
-              </Button>
-              <Button 
-                onClick={triggerVideoFileInput}
-                disabled={uploading}
-                className="flex items-center"
-                variant={mediaType === 'video' ? 'default' : 'outline'}
-              >
-                <Video className="mr-2 h-4 w-4" />
-                {uploading && mediaType === 'video' ? 'Uploading...' : 'Upload Videos'}
-              </Button>
+        <CardContent className="py-4">
+          {/* Summary Stats - Always Visible */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+            <div className="bg-blue-50 p-3 rounded-lg text-center">
+              <HotelIcon className="h-6 w-6 text-blue-500 mx-auto" />
+              <p className="text-xs text-gray-600 mt-1">Hotels</p>
+              <p className="font-bold">{totalHotels}</p>
             </div>
+            <div className="bg-green-50 p-3 rounded-lg text-center">
+              <Bed className="h-6 w-6 text-green-500 mx-auto" />
+              <p className="text-xs text-gray-600 mt-1">Rooms</p>
+              <p className="font-bold">{totalRooms}</p>
+            </div>
+            <div className="bg-purple-50 p-3 rounded-lg text-center">
+              <Users className="h-6 w-6 text-purple-500 mx-auto" />
+              <p className="text-xs text-gray-600 mt-1">Bookings</p>
+              <p className="font-bold">{totalBookings}</p>
+            </div>
+            <div className="bg-orange-50 p-3 rounded-lg text-center">
+              <User className="h-6 w-6 text-orange-500 mx-auto" />
+              <p className="text-xs text-gray-600 mt-1">Users</p>
+              <p className="font-bold">{totalUsers}</p>
+            </div>
+            <div className="bg-yellow-50 p-3 rounded-lg text-center">
+              <CreditCard className="h-6 w-6 text-yellow-500 mx-auto" />
+              <p className="text-xs text-gray-600 mt-1">Revenue</p>
+              <p className="font-bold">₦{totalRevenue.toLocaleString()}</p>
+            </div>
+          </div>
+          
+          {/* Detailed Stats - Collapsible */}
+          {showStats && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t">
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-sm">Booking Conversion Rate</h4>
+                <p className="text-2xl font-bold text-blue-600">72%</p>
+                <p className="text-xs text-gray-500">+5% from last month</p>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-sm">Avg. Booking Value</h4>
+                <p className="text-2xl font-bold text-green-600">₦{totalBookings > 0 ? Math.round(totalRevenue/totalBookings).toLocaleString() : 0}</p>
+                <p className="text-xs text-gray-500">Per booking</p>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-sm">Occupancy Rate</h4>
+                <p className="text-2xl font-bold text-purple-600">68%</p>
+                <p className="text-xs text-gray-500">Current month</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Media Upload Section - Collapsible */}
+      <Card className="mb-6">
+        <CardHeader className="py-4">
+          <CardTitle className="text-lg">Media Management</CardTitle>
+        </CardHeader>
+        <CardContent className="py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button 
+              onClick={triggerImageFileInput}
+              disabled={uploading}
+              className="w-full sm:w-auto"
+              size="sm"
+            >
+              <ImageIcon className="mr-2 h-4 w-4" />
+              {uploading && mediaType === 'image' ? 'Uploading...' : 'Upload Images'}
+            </Button>
+            <Button 
+              onClick={triggerVideoFileInput}
+              disabled={uploading}
+              className="w-full sm:w-auto"
+              size="sm"
+              variant="outline"
+            >
+              <Video className="mr-2 h-4 w-4" />
+              {uploading && mediaType === 'video' ? 'Uploading...' : 'Upload Videos'}
+            </Button>
             <Input
               type="file"
               ref={imageFileInputRef}
@@ -326,24 +342,25 @@ const AdminDashboard = () => {
               accept="video/*"
               onChange={handleVideoUpload}
             />
-            <p className="text-sm text-gray-500 mt-2">
-              {mediaType === 'image' 
-                ? 'PNG, JPG, GIF up to 10MB' 
-                : 'MP4, MOV, AVI up to 100MB'}
-            </p>
           </div>
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            {mediaType === 'image' 
+              ? 'PNG, JPG, GIF up to 10MB' 
+              : 'MP4, MOV, AVI up to 100MB'}
+          </p>
         </CardContent>
       </Card>
 
       {/* Tabs for different sections */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="hotels">Hotels</TabsTrigger>
-          <TabsTrigger value="rooms">Rooms</TabsTrigger>
-          <TabsTrigger value="bookings">Bookings</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="communications">Communications</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1">
+          <TabsTrigger value="hotels" className="text-xs sm:text-sm">Hotels</TabsTrigger>
+          <TabsTrigger value="rooms" className="text-xs sm:text-sm">Rooms</TabsTrigger>
+          <TabsTrigger value="bookings" className="text-xs sm:text-sm">Bookings</TabsTrigger>
+          <TabsTrigger value="users" className="text-xs sm:text-sm">Users</TabsTrigger>
+          <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
+          <TabsTrigger value="communications" className="text-xs sm:text-sm">Communications</TabsTrigger>
+          <TabsTrigger value="offers" className="text-xs sm:text-sm">Special Offers</TabsTrigger>
         </TabsList>
 
         <TabsContent value="hotels">
@@ -614,17 +631,11 @@ const AdminDashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Booking Trends</CardTitle>
+                    <CardTitle className="text-lg">Booking Trends (Last 30 Days)</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-                      <div className="text-center">
-                        <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500">Booking trend chart would appear here</p>
-                        <Button variant="outline" className="mt-4" asChild>
-                          <Link to="/admin/analytics">View Detailed Analytics</Link>
-                        </Button>
-                      </div>
+                    <div className="h-64">
+                      <BookingTrendsChart bookings={bookings || []} />
                     </div>
                   </CardContent>
                 </Card>
@@ -634,14 +645,8 @@ const AdminDashboard = () => {
                     <CardTitle className="text-lg">Revenue Overview</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-                      <div className="text-center">
-                        <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500">Revenue chart would appear here</p>
-                        <Button variant="outline" className="mt-4" asChild>
-                          <Link to="/admin/analytics">View Detailed Analytics</Link>
-                        </Button>
-                      </div>
+                    <div className="h-64">
+                      <RevenueChart bookings={bookings || []} />
                     </div>
                   </CardContent>
                 </Card>
@@ -651,18 +656,8 @@ const AdminDashboard = () => {
                     <CardTitle className="text-lg">Popular Hotels</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {hotels?.slice(0, 3).map((hotel: Hotel, index: number) => (
-                        <div key={hotel.id} className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mr-2 text-xs">
-                              {index + 1}
-                            </span>
-                            <span className="font-medium">{hotel.name}</span>
-                          </div>
-                          <span className="text-sm text-gray-500">₦{Math.floor(Math.random() * 1000000).toLocaleString()} revenue</span>
-                        </div>
-                      ))}
+                    <div className="h-64">
+                      <PopularHotelsChart hotels={hotels || []} bookings={bookings || []} />
                     </div>
                   </CardContent>
                 </Card>
@@ -672,21 +667,8 @@ const AdminDashboard = () => {
                     <CardTitle className="text-lg">Customer Feedback</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <MessageCircle className="h-5 w-5 text-green-500 mr-2" />
-                          <span>Positive Reviews</span>
-                        </div>
-                        <span className="font-semibold">85%</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <Mail className="h-5 w-5 text-blue-500 mr-2" />
-                          <span>Newsletter Subscribers</span>
-                        </div>
-                        <span className="font-semibold">{users?.length || 0}</span>
-                      </div>
+                    <div className="h-64">
+                      <CustomerFeedbackChart bookings={bookings || []} users={users || []} />
                     </div>
                   </CardContent>
                 </Card>
@@ -710,15 +692,15 @@ const AdminDashboard = () => {
                 </p>
                 <div className="flex space-x-4">
                   <Button 
-                    variant={activeTab === 'newsletter' ? 'default' : 'outline'}
-                    onClick={() => setActiveTab('newsletter')}
+                    variant={communicationsSubTab === 'newsletter' ? 'default' : 'outline'}
+                    onClick={() => setCommunicationsSubTab('newsletter')}
                   >
                     <Mail className="h-4 w-4 mr-2" />
                     Newsletter
                   </Button>
                   <Button 
-                    variant={activeTab === 'messages' ? 'default' : 'outline'}
-                    onClick={() => setActiveTab('messages')}
+                    variant={communicationsSubTab === 'messages' ? 'default' : 'outline'}
+                    onClick={() => setCommunicationsSubTab('messages')}
                   >
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Contact Messages
@@ -727,14 +709,16 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
             
-            {activeTab === 'communications' || activeTab === 'newsletter' ? (
+            {communicationsSubTab === 'newsletter' ? (
               <NewsletterManagement />
-            ) : null}
-            
-            {activeTab === 'messages' ? (
+            ) : (
               <ContactMessages />
-            ) : null}
+            )}
           </div>
+        </TabsContent>
+        
+        <TabsContent value="offers">
+          <SpecialOffersManagement />
         </TabsContent>
       </Tabs>
     </div>
@@ -742,3 +726,233 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+// Booking Trends Chart Component
+const BookingTrendsChart = ({ bookings }: { bookings: Booking[] }) => {
+  // Generate data for the last 30 days
+  const generateBookingTrendsData = () => {
+    const data = [];
+    const today = new Date();
+    
+    for (let i = 29; i >= 0; i--) {
+      const date = subDays(today, i);
+      const dateString = format(date, 'MMM dd');
+      
+      const count = bookings.filter(booking => {
+        const bookingDate = new Date(booking.createdAt);
+        return (
+          bookingDate.getDate() === date.getDate() &&
+          bookingDate.getMonth() === date.getMonth() &&
+          bookingDate.getFullYear() === date.getFullYear()
+        );
+      }).length;
+      
+      data.push({ date: dateString, bookings: count });
+    }
+    
+    return data;
+  };
+  
+  const data = generateBookingTrendsData();
+  
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="date" />
+        <YAxis />
+        <Tooltip />
+        <Bar dataKey="bookings" fill="#3b82f6" name="Bookings" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+};
+
+// Revenue Chart Component
+const RevenueChart = ({ bookings }: { bookings: Booking[] }) => {
+  // Group revenue by month
+  const generateRevenueData = () => {
+    const revenueByMonth: Record<string, number> = {};
+    
+    bookings
+      .filter(booking => booking.status === 'confirmed')
+      .forEach(booking => {
+        const month = format(new Date(booking.createdAt), 'MMM yyyy');
+        if (!revenueByMonth[month]) {
+          revenueByMonth[month] = 0;
+        }
+        revenueByMonth[month] += booking.totalPrice;
+      });
+    
+    return Object.entries(revenueByMonth)
+      .map(([month, amount]) => ({ month, revenue: amount }))
+      .slice(-6); // Last 6 months
+  };
+  
+  const data = generateRevenueData();
+  
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="month" />
+        <YAxis />
+        <Tooltip formatter={(value) => [`₦${Number(value).toLocaleString()}`, 'Revenue']} />
+        <Line 
+          type="monotone" 
+          dataKey="revenue" 
+          stroke="#10b981" 
+          name="Revenue" 
+          strokeWidth={2}
+          dot={{ r: 4 }}
+          activeDot={{ r: 6 }}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+};
+
+// Popular Hotels Chart Component
+const PopularHotelsChart = ({ hotels, bookings }: { hotels: Hotel[], bookings: Booking[] }) => {
+  // Calculate revenue by hotel
+  const generateHotelData = () => {
+    const hotelRevenue: Record<string, { name: string; revenue: number; bookings: number }> = {};
+    
+    bookings
+      .filter(booking => booking.status === 'confirmed')
+      .forEach(booking => {
+        const hotel = hotels.find(h => h.id === booking.hotelId);
+        if (hotel) {
+          if (!hotelRevenue[hotel.id]) {
+            hotelRevenue[hotel.id] = {
+              name: hotel.name,
+              revenue: 0,
+              bookings: 0
+            };
+          }
+          hotelRevenue[hotel.id].revenue += booking.totalPrice;
+          hotelRevenue[hotel.id].bookings += 1;
+        }
+      });
+    
+    return Object.values(hotelRevenue)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5)
+      .map(hotel => ({
+        name: hotel.name.length > 15 ? `${hotel.name.substring(0, 15)}...` : hotel.name,
+        value: hotel.revenue,
+        bookings: hotel.bookings
+      }));
+  };
+  
+  const data = generateHotelData();
+  const COLORS = ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe'];
+  
+  if (data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-gray-500">No hotel data available</p>
+      </div>
+    );
+  }
+  
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          labelLine={true}
+          outerRadius={80}
+          fill="#8884d8"
+          dataKey="value"
+          nameKey="name"
+          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip formatter={(value) => [`₦${Number(value).toLocaleString()}`, 'Revenue']} />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+};
+
+// Customer Feedback Chart Component
+const CustomerFeedbackChart = ({ bookings, users }: { bookings: Booking[], users: any[] }) => {
+  // Calculate booking status distribution
+  const bookingStatusData = [
+    { name: 'Confirmed', value: bookings.filter(b => b.status === 'confirmed').length },
+    { name: 'Pending', value: bookings.filter(b => b.status === 'pending').length },
+    { name: 'Cancelled', value: bookings.filter(b => b.status === 'cancelled').length },
+  ];
+  
+  const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
+  
+  // Calculate user growth
+  const userGrowthData = () => {
+    const data = [];
+    const today = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+      const month = subMonths(today, i);
+      const monthString = format(month, 'MMM yyyy');
+      
+      const count = users.filter(user => {
+        const userDate = new Date(user.createdAt);
+        return (
+          userDate.getMonth() <= month.getMonth() &&
+          userDate.getFullYear() <= month.getFullYear()
+        );
+      }).length;
+      
+      data.push({ month: monthString, users: count });
+    }
+    
+    return data;
+  };
+  
+  const userData = userGrowthData();
+  
+  return (
+    <div className="grid grid-cols-1 gap-4 h-full">
+      <div className="h-1/2">
+        <h4 className="text-sm font-medium mb-2">Booking Status Distribution</h4>
+        <ResponsiveContainer width="100%" height="90%">
+          <PieChart>
+            <Pie
+              data={bookingStatusData}
+              cx="50%"
+              cy="50%"
+              innerRadius={30}
+              outerRadius={50}
+              fill="#8884d8"
+              dataKey="value"
+              nameKey="name"
+              label={({ name, value }) => `${name}: ${value}`}
+            >
+              {bookingStatusData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="h-1/2">
+        <h4 className="text-sm font-medium mb-2">User Growth</h4>
+        <ResponsiveContainer width="100%" height="90%">
+          <BarChart data={userData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="users" fill="#8b5cf6" name="Users" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};

@@ -9,14 +9,18 @@ import {
   LogIn, 
   LogOut, 
   Shield, 
-  Database,
-  Keyboard
+  Keyboard,
+  Menu,
+  X,
+  ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 import CurrencySelector from '@/components/CurrencySelector';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [userMenuOpen, setUserMenuOpen] = React.useState(false);
 
   // Show keyboard shortcuts help
   const showShortcutsHelp = () => {
@@ -42,6 +46,29 @@ const Header: React.FC = () => {
     );
   };
 
+  // Navigation items
+  const navItems = [
+    { name: 'Home', path: '/' },
+    { name: 'Rooms', path: '/rooms' },
+    { name: 'Special Offers', path: '/special-offers' },
+    { name: 'About', path: '/about' },
+    { name: 'Contact', path: '/contact' },
+  ];
+
+  // Close user menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuOpen && !(event.target as Element).closest('.user-menu')) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userMenuOpen]);
+
   return (
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4">
@@ -51,63 +78,172 @@ const Header: React.FC = () => {
             <span className="text-xl font-bold text-gray-900">NaijaStay</span>
           </Link>
 
-          <nav className="hidden md:flex space-x-8">
-            <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Home
-            </Link>
-            <Link to="/rooms" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Rooms
-            </Link>
-            <Link to="/about" className="text-gray-700 hover:text-blue-600 transition-colors">
-              About
-            </Link>
-            <Link to="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Contact
-            </Link>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex space-x-6">
+            {navItems.map((item) => (
+              <Link 
+                key={item.name} 
+                to={item.path} 
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              >
+                {item.name}
+              </Link>
+            ))}
           </nav>
 
-          <div className="flex items-center space-x-4">
+          {/* Desktop Auth Section */}
+          <div className="hidden md:flex items-center space-x-3">
             <CurrencySelector />
             {user ? (
-              <>
+              <div className="relative user-menu">
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={showShortcutsHelp}
-                  className="hidden md:flex items-center"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center space-x-1"
                 >
-                  <Keyboard className="h-4 w-4 mr-1" />
-                  <span className="text-xs">Shortcuts</span>
+                  <User className="h-4 w-4" />
+                  <span className="hidden lg:inline mr-1">{user.email?.split('@')[0]}</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                 </Button>
-                <Link to="/profile">
-                  <Button variant="ghost" size="sm">
-                    <User className="h-4 w-4 mr-2" />
-                    Profile
-                  </Button>
-                </Link>
-                {user.email === 'victorralph407@gmail.com' && (
-                  <Link to="/admin">
-                    <Button variant="ghost" size="sm">
-                      <Shield className="h-4 w-4 mr-2" />
-                      Admin
+                
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={showShortcutsHelp}
+                      className="w-full justify-start"
+                    >
+                      <Keyboard className="h-4 w-4 mr-2" />
+                      Shortcuts
                     </Button>
-                  </Link>
+                    <Link to="/profile" onClick={() => setUserMenuOpen(false)}>
+                      <Button variant="ghost" size="sm" className="w-full justify-start">
+                        <User className="h-4 w-4 mr-2" />
+                        Profile
+                      </Button>
+                    </Link>
+                    {user.email === 'victorralph407@gmail.com' && (
+                      <Link to="/admin" onClick={() => setUserMenuOpen(false)}>
+                        <Button variant="ghost" size="sm" className="w-full justify-start">
+                          <Shield className="h-4 w-4 mr-2" />
+                          Admin
+                        </Button>
+                      </Link>
+                    )}
+                    <Button 
+                      onClick={() => {
+                        logout();
+                        setUserMenuOpen(false);
+                      }} 
+                      variant="ghost" 
+                      size="sm" 
+                      className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </Button>
+                  </div>
                 )}
-                <Button onClick={logout} variant="outline" size="sm">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
-              </>
+              </div>
             ) : (
               <Link to="/auth">
-                <Button variant="outline" size="sm">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Login
+                <Button variant="outline" size="sm" className="flex items-center">
+                  <LogIn className="h-4 w-4 mr-1" />
+                  <span className="hidden lg:inline">Login</span>
                 </Button>
               </Link>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center space-x-2">
+            <CurrencySelector />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden py-4 border-t">
+            <nav className="flex flex-col space-y-3 mb-4">
+              {navItems.map((item) => (
+                <Link 
+                  key={item.name} 
+                  to={item.path} 
+                  className="text-gray-700 hover:text-blue-600 transition-colors font-medium py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+            
+            <div className="flex flex-col space-y-3">
+              {user ? (
+                <>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      showShortcutsHelp();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="justify-start"
+                  >
+                    <Keyboard className="h-4 w-4 mr-2" />
+                    Shortcuts
+                  </Button>
+                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" size="sm" className="justify-start w-full">
+                      <User className="h-4 w-4 mr-2" />
+                      Profile
+                    </Button>
+                  </Link>
+                  {user.email === 'victorralph407@gmail.com' && (
+                    <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="ghost" size="sm" className="justify-start w-full">
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin
+                      </Button>
+                    </Link>
+                  )}
+                  <Button 
+                    onClick={() => {
+                      logout();
+                      setMobileMenuOpen(false);
+                    }} 
+                    variant="outline" 
+                    size="sm" 
+                    className="justify-start"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="outline" size="sm" className="justify-start w-full">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Login
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

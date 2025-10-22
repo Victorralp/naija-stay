@@ -45,6 +45,7 @@ const Footer = () => {
       const errorMessage = "Failed to subscribe. Please try again.";
       toast.error(errorMessage);
       setError(errorMessage);
+      console.error("Newsletter subscription error:", err);
     } finally {
       setLoading(false);
     }
@@ -56,10 +57,10 @@ const Footer = () => {
   };
 
   return (
-    <footer id="footer" className="bg-muted text-foreground pt-16 pb-8 w-full">
+    <footer id="footer" className="bg-muted text-foreground pt-12 pb-8 w-full">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
@@ -179,9 +180,17 @@ const Footer = () => {
                 disabled={loading}
                 className="whitespace-nowrap"
               >
-                {loading ? "Subscribing..." : "Subscribe"}
+                {loading ? (
+                  <span className="flex items-center">
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                    Subscribing...
+                  </span>
+                ) : "Subscribe"}
               </Button>
             </form>
+            <p className="text-muted-foreground text-xs mt-3">
+              By subscribing, you agree to our Privacy Policy and consent to receive updates.
+            </p>
           </div>
         </div>
 

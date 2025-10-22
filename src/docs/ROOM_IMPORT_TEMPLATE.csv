@@ -1,0 +1,3 @@
+ID,Hotel ID,Hotel Name,Name,Description,Type,Capacity,Price Per Night,Amenities,Available,Created At,Updated At
+,,hotel-id-1,Deluxe Room,"Spacious room with city view","Deluxe",2,25000,"WiFi;AC;TV;Mini Bar",Yes,,
+,,hotel-id-2,Standard Room,"Cozy standard room","Standard",2,15000,"WiFi;AC;TV",Yes,,

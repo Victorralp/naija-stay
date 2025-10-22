@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { hotelService } from '@/services/hotelService';
-import { PlusCircle, Edit, Trash2, Upload } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Upload, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -14,6 +14,7 @@ import { ArrowLeft } from 'lucide-react';
 const HotelManagementPage = () => {
   const queryClient = useQueryClient();
   const [isAddingHotel, setIsAddingHotel] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -93,6 +94,160 @@ const HotelManagementPage = () => {
       } catch (error) {
         toast.error('Failed to delete hotel');
         console.error('Delete hotel error:', error);
+      }
+    }
+  };
+
+  // Export hotels to CSV
+  const handleExportHotels = () => {
+    if (!hotels || hotels.length === 0) {
+      toast.error('No hotels to export');
+      return;
+    }
+
+    // Create CSV content
+    const headers = [
+      'ID', 'Name', 'Description', 'Location', 'City', 'State', 'Country', 
+      'Rating', 'Price Range', 'Amenities', 'Featured', 'Available', 
+      'Created At', 'Updated At'
+    ];
+    
+    const csvContent = [
+      headers.join(','),
+      ...hotels.map(hotel => [
+        hotel.id,
+        `"${hotel.name.replace(/"/g, '""')}"`,
+        `"${hotel.description.replace(/"/g, '""')}"`,
+        `"${hotel.location.replace(/"/g, '""')}"`,
+        `"${hotel.city.replace(/"/g, '""')}"`,
+        `"${hotel.state.replace(/"/g, '""')}"`,
+        `"${hotel.country.replace(/"/g, '""')}"`,
+        hotel.rating,
+        `"${hotel.priceRange}"`,
+        `"${hotel.amenities.join(';').replace(/"/g, '""')}"`,
+        hotel.featured ? 'Yes' : 'No',
+        hotel.available ? 'Yes' : 'No',
+        hotel.createdAt.toISOString(),
+        hotel.updatedAt.toISOString()
+      ].join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `hotels-export-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success(`Exported ${hotels.length} hotels successfully`);
+  };
+
+  // Trigger file input click
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Handle CSV import
+  const handleImportHotels = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Please select a CSV file');
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').filter(line => line.trim() !== '');
+      
+      if (lines.length < 2) {
+        toast.error('CSV file is empty or invalid');
+        return;
+      }
+
+      // Parse CSV (simple implementation)
+      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      const importedHotels = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+        if (values.length !== headers.length) continue;
+        
+        const hotel: any = {};
+        headers.forEach((header, index) => {
+          const value = values[index];
+          switch (header.toLowerCase()) {
+            case 'name':
+            case 'description':
+            case 'location':
+            case 'city':
+            case 'state':
+            case 'country':
+            case 'price range':
+              hotel[header.toLowerCase().replace(' ', '')] = value;
+              break;
+            case 'rating':
+              hotel.rating = parseInt(value) || 5;
+              break;
+            case 'amenities':
+              hotel.amenities = value.split(';').map(a => a.trim()).filter(a => a);
+              break;
+            case 'featured':
+            case 'available':
+              hotel[header.toLowerCase()] = value.toLowerCase() === 'yes';
+              break;
+          }
+        });
+        
+        // Only add hotels with required fields
+        if (hotel.name) {
+          importedHotels.push(hotel);
+        }
+      }
+      
+      if (importedHotels.length === 0) {
+        toast.error('No valid hotels found in CSV');
+        return;
+      }
+      
+      // Add hotels to database
+      let successCount = 0;
+      for (const hotel of importedHotels) {
+        try {
+          await hotelService.addHotel({
+            ...hotel,
+            images: [],
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+          successCount++;
+        } catch (error) {
+          console.error('Error importing hotel:', error);
+        }
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['admin-hotels'] });
+      
+      if (successCount > 0) {
+        toast.success(`Successfully imported ${successCount} hotels`);
+      } else {
+        toast.error('Failed to import hotels');
+      }
+    } catch (error) {
+      toast.error('Failed to import hotels');
+      console.error('Import error:', error);
+    } finally {
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     }
   };
@@ -280,13 +435,31 @@ const HotelManagementPage = () => {
                   
                   <div className="pt-4 border-t">
                     <h3 className="font-medium mb-2">Bulk Actions</h3>
-                    <Button variant="outline" className="w-full mb-2">
-                      <Upload className="mr-2 h-4 w-4" />
-                      Import Hotels
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      Export Hotel Data
-                    </Button>
+                    <div className="space-y-2">
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={handleExportHotels}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Export Hotels (CSV)
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={triggerFileInput}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Import Hotels (CSV)
+                      </Button>
+                      <Input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept=".csv"
+                        onChange={handleImportHotels}
+                      />
+                    </div>
                   </div>
                 </div>
               )}

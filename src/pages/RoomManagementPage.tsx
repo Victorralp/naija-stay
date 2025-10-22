@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { hotelService } from '@/services/hotelService';
-import { PlusCircle, Edit, Trash2, Upload } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Upload, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -15,6 +15,7 @@ import { ArrowLeft } from 'lucide-react';
 const RoomManagementPage = () => {
   const queryClient = useQueryClient();
   const [isAddingRoom, setIsAddingRoom] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     hotelId: '',
     name: '',
@@ -98,6 +99,163 @@ const RoomManagementPage = () => {
       } catch (error) {
         toast.error('Failed to delete room');
         console.error('Delete room error:', error);
+      }
+    }
+  };
+
+  // Export rooms to CSV
+  const handleExportRooms = () => {
+    if (!rooms || rooms.length === 0) {
+      toast.error('No rooms to export');
+      return;
+    }
+
+    // Create CSV content
+    const headers = [
+      'ID', 'Hotel ID', 'Hotel Name', 'Name', 'Description', 'Type', 
+      'Capacity', 'Price Per Night', 'Amenities', 'Available', 
+      'Created At', 'Updated At'
+    ];
+    
+    const csvContent = [
+      headers.join(','),
+      ...rooms.map(room => {
+        // Find hotel name for this room
+        const hotel = hotels?.find(h => h.id === room.hotelId);
+        return [
+          room.id,
+          room.hotelId,
+          `"${(hotel?.name || '').replace(/"/g, '""')}"`,
+          `"${room.name.replace(/"/g, '""')}"`,
+          `"${room.description.replace(/"/g, '""')}"`,
+          `"${room.type.replace(/"/g, '""')}"`,
+          room.capacity,
+          room.pricePerNight,
+          `"${room.amenities.join(';').replace(/"/g, '""')}"`,
+          room.available ? 'Yes' : 'No',
+          room.createdAt.toISOString(),
+          room.updatedAt.toISOString()
+        ].join(',');
+      })
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `rooms-export-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success(`Exported ${rooms.length} rooms successfully`);
+  };
+
+  // Trigger file input click
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Handle CSV import
+  const handleImportRooms = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Please select a CSV file');
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').filter(line => line.trim() !== '');
+      
+      if (lines.length < 2) {
+        toast.error('CSV file is empty or invalid');
+        return;
+      }
+
+      // Parse CSV (simple implementation)
+      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      const importedRooms = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+        if (values.length !== headers.length) continue;
+        
+        const room: any = {};
+        headers.forEach((header, index) => {
+          const value = values[index];
+          switch (header.toLowerCase()) {
+            case 'hotel id':
+              room.hotelId = value;
+              break;
+            case 'name':
+            case 'description':
+            case 'type':
+              room[header.toLowerCase()] = value;
+              break;
+            case 'capacity':
+              room.capacity = parseInt(value) || 2;
+              break;
+            case 'price per night':
+              room.pricePerNight = parseFloat(value) || 0;
+              break;
+            case 'amenities':
+              room.amenities = value.split(';').map(a => a.trim()).filter(a => a);
+              break;
+            case 'available':
+              room.available = value.toLowerCase() === 'yes';
+              break;
+          }
+        });
+        
+        // Only add rooms with required fields
+        if (room.hotelId && room.name) {
+          importedRooms.push(room);
+        }
+      }
+      
+      if (importedRooms.length === 0) {
+        toast.error('No valid rooms found in CSV');
+        return;
+      }
+      
+      // Add rooms to database
+      let successCount = 0;
+      for (const room of importedRooms) {
+        try {
+          await hotelService.addRoom({
+            ...room,
+            images: [],
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+          successCount++;
+        } catch (error) {
+          console.error('Error importing room:', error);
+        }
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['admin-rooms'] });
+      
+      if (successCount > 0) {
+        toast.success(`Successfully imported ${successCount} rooms`);
+      } else {
+        toast.error('Failed to import rooms');
+      }
+    } catch (error) {
+      toast.error('Failed to import rooms');
+      console.error('Import error:', error);
+    } finally {
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     }
   };
@@ -270,7 +428,7 @@ const RoomManagementPage = () => {
                       name="amenities"
                       value={formData.amenities}
                       onChange={handleInputChange}
-                      placeholder="WiFi, AC, TV"
+                      placeholder="WiFi, TV, AC, Mini Bar"
                     />
                   </div>
                   
@@ -305,13 +463,31 @@ const RoomManagementPage = () => {
                   
                   <div className="pt-4 border-t">
                     <h3 className="font-medium mb-2">Bulk Actions</h3>
-                    <Button variant="outline" className="w-full mb-2">
-                      <Upload className="mr-2 h-4 w-4" />
-                      Import Rooms
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      Export Room Data
-                    </Button>
+                    <div className="space-y-2">
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={handleExportRooms}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Export Rooms (CSV)
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={triggerFileInput}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Import Rooms (CSV)
+                      </Button>
+                      <Input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept=".csv"
+                        onChange={handleImportRooms}
+                      />
+                    </div>
                   </div>
                 </div>
               )}

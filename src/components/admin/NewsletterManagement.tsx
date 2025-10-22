@@ -49,11 +49,9 @@ const NewsletterManagement: React.FC = () => {
 
     setSending(true);
     try {
-      // In a real implementation, you would send the newsletter to all subscribers
-      // This might involve integrating with an email service like SendGrid or Mailgun
-      console.log('Sending newsletter:', { subject, message, subscriberCount: subscribers.length });
+      const result = await adminService.sendNewsletter(subject, message);
       
-      toast.success(`Newsletter sent to ${subscribers.length} subscribers!`);
+      toast.success(`Newsletter sent successfully! ${result.successCount} sent, ${result.failureCount} failed.`);
       setSubject('');
       setMessage('');
     } catch (error) {

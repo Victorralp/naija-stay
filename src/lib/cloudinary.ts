@@ -88,10 +88,28 @@ export const uploadMultipleToCloudinary = async (files: File[], folder: string =
 
 // Helper function to delete a file from Cloudinary (requires server-side signature)
 export const deleteFromCloudinary = async (publicId: string): Promise<void> => {
-  // Note: Deletion typically requires server-side authentication
-  // For now, we'll log a warning and suggest server-side implementation
-  console.warn('Delete from Cloudinary requires server-side authentication. Please implement this on your backend.');
-  throw new Error('Delete operation not supported in client-side implementation. Use server-side implementation.');
+  try {
+    // In a real implementation, this would call a backend service
+    // that has the Cloudinary API secret for authenticated operations
+    // For example:
+    // const response = await fetch('/api/cloudinary/delete', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({ publicId }),
+    // });
+    // 
+    // if (!response.ok) {
+    //   throw new Error(`Failed to delete file: ${response.statusText}`);
+    // }
+    
+    // For now, we'll throw an error indicating that server-side implementation is needed
+    throw new Error('Delete operation requires backend implementation. Please implement a server-side service with Cloudinary API secret.');
+  } catch (error) {
+    console.error('Error deleting file from Cloudinary:', error);
+    throw new Error(`Failed to delete file from Cloudinary: ${error.message}`);
+  }
 };
 
 // Helper function to generate optimized image URLs
