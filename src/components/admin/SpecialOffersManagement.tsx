@@ -93,10 +93,10 @@ const SpecialOffersManagement: React.FC = () => {
         toast.success('Special offer updated successfully');
       } else {
         // Add new offer
-        await adminService.saveSpecialOffer(formData);
+        const newOfferId = await adminService.saveSpecialOffer(formData);
         const newOffer: SpecialOffer = {
           ...formData,
-          id: Date.now().toString()
+          id: newOfferId
         };
         setOffers(prev => [...prev, newOffer]);
         toast.success('Special offer added successfully');

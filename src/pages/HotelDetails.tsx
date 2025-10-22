@@ -5,7 +5,7 @@ import { useNavigate as useReactNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, MapPin, Star, Users, Bed, Wifi, Car, Coffee } from 'lucide-react';
+import { ArrowLeft, MapPin, Star, Users, Bed, Wifi, Car, Coffee, Phone, Mail } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import BookingForm from '@/components/BookingForm';
 import HotelGallery from '@/components/HotelGallery';
@@ -117,7 +117,7 @@ const HotelDetails = () => {
             </div>
           </div>
 
-          {/* Weather Widget and Hotel Info */}
+          {/* Hotel Info and Contact */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <div className="lg:col-span-2">
               <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
@@ -126,13 +126,28 @@ const HotelDetails = () => {
                 </CardHeader>
                 <CardContent>
                   <motion.p 
-                    className="text-gray-700 leading-relaxed"
+                    className="text-gray-700 leading-relaxed mb-6"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
                   >
                     {hotel.description}
                   </motion.p>
+                  
+                  {/* Contact Information */}
+                  <div className="border-t pt-4 mt-4">
+                    <h3 className="text-xl font-semibold mb-3">Contact Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="flex items-center">
+                        <Phone className="h-5 w-5 mr-2 text-primary" />
+                        <span className="text-gray-700">+234 123 456 7890</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Mail className="h-5 w-5 mr-2 text-primary" />
+                        <span className="text-gray-700">info@{hotel.name.toLowerCase().replace(/\s+/g, '')}.com</span>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -176,9 +191,9 @@ const HotelDetails = () => {
               <CardDescription>Find us on the map</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="aspect-video rounded-lg overflow-hidden">
+              <div className="aspect-video rounded-lg overflow-hidden mb-4">
                 <iframe
-                  src={`https://www.google.com/maps?q=${hotel.city},${hotel.state}&output=embed`}
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(`${hotel.location}, ${hotel.city}, ${hotel.state}, ${hotel.country}`)}&output=embed`}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}

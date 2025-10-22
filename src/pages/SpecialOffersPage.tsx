@@ -35,7 +35,11 @@ const SpecialOffersPage = () => {
           return {
             id: doc.id,
             ...data,
-            validUntil: data.validUntil ? data.validUntil.toDate().toISOString().split('T')[0] : '',
+            validUntil: data.validUntil ? 
+              (typeof data.validUntil.toDate === 'function' ? 
+                data.validUntil.toDate().toISOString().split('T')[0] : 
+                data.validUntil) : 
+              new Date().toISOString().split('T')[0],
             terms: data.terms || ''
           } as SpecialOffer;
         });

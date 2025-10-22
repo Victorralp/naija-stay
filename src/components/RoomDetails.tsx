@@ -1,4 +1,4 @@
-import { Bed, Users, Wifi, Car, Coffee, Tv, Utensils, Dumbbell, Star } from 'lucide-react';
+import { Bed, Users, Wifi, Car, Coffee, Tv, Utensils, Dumbbell, Star, CalendarIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -8,6 +8,11 @@ import { format } from 'date-fns';
 import { formatCurrency } from '@/utils/formatters';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 interface RoomDetailsProps {
   room: Room;
@@ -16,6 +21,7 @@ interface RoomDetailsProps {
 
 const RoomDetails = ({ room, onBookNow }: RoomDetailsProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const getAmenityIcon = (amenity: string) => {
     switch (amenity.toLowerCase()) {
@@ -52,6 +58,11 @@ const RoomDetails = ({ room, onBookNow }: RoomDetailsProps) => {
               alt={room.name}
               className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
             />
+            <div className="absolute top-4 right-4">
+              <Badge variant="secondary" className="text-lg font-bold py-2 px-3">
+                {formatCurrency(room.pricePerNight)}<span className="text-sm font-normal">/night</span>
+              </Badge>
+            </div>
           </motion.div>
         )}
         <CardHeader>
@@ -128,15 +139,31 @@ const RoomDetails = ({ room, onBookNow }: RoomDetailsProps) => {
             <h3 className="text-lg font-semibold mb-3">Check Availability</h3>
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-1">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  className="rounded-md border"
-                />
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => {
+                        setSelectedDate(date);
+                        setIsCalendarOpen(false);
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="flex-1">
-                <div className="bg-muted p-4 rounded-lg">
+                <div className="bg-muted p-4 rounded-lg h-full">
                   <h4 className="font-medium mb-2">Selected Date</h4>
                   {selectedDate ? (
                     <p className="text-lg">{format(selectedDate, 'PPP')}</p>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Expand } from 'lucide-react';
 
 interface HotelGalleryProps {
   images: string[];
@@ -56,24 +56,25 @@ const HotelGallery = ({ images, hotelName }: HotelGalleryProps) => {
     <div className="space-y-4">
       {/* Main image */}
       <div 
-        className="relative w-full h-64 md:h-96 rounded-xl overflow-hidden cursor-pointer shadow-lg"
+        className="relative w-full h-64 md:h-96 rounded-xl overflow-hidden cursor-pointer shadow-lg group"
         onClick={() => openGallery(0)}
       >
         <img
           src={images[0]}
           alt={`${hotelName} - Main view`}
-          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
           <Button 
             variant="secondary" 
-            className="m-4"
+            className="m-4 flex items-center"
             onClick={(e) => {
               e.stopPropagation();
               openGallery(0);
             }}
           >
+            <Expand className="mr-2 h-4 w-4" />
             View Gallery ({images.length} photos)
           </Button>
         </div>
@@ -85,13 +86,13 @@ const HotelGallery = ({ images, hotelName }: HotelGalleryProps) => {
           {images.slice(1, 5).map((image, index) => (
             <div 
               key={index}
-              className="relative h-24 rounded-lg overflow-hidden cursor-pointer shadow hover:shadow-md transition-shadow duration-300"
+              className="relative h-24 rounded-lg overflow-hidden cursor-pointer shadow hover:shadow-md transition-shadow duration-300 group"
               onClick={() => openGallery(index + 1)}
             >
               <img
                 src={image}
                 alt={`${hotelName} - View ${index + 2}`}
-                className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                 loading="lazy"
               />
               {index === 3 && images.length > 5 && (

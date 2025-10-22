@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import Index from './pages/Index';
 import RoomsPage from './pages/RoomsPage';
+import HotelsPage from './pages/HotelsPage';
 import HotelDetails from './pages/HotelDetails';
 import BookingPage from './pages/BookingPage';
 import EnhancedBookingPage from './pages/EnhancedBookingPage';
@@ -97,6 +98,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/rooms" element={<RoomsPage />} />
+                <Route path="/hotels" element={<HotelsPage />} />
                 <Route path="/hotel/:id" element={<HotelDetails />} />
                 <Route path="/booking" element={<BookingPage />} />
                 <Route path="/enhanced-booking" element={<EnhancedBookingPage />} />

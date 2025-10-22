@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, getDocs, updateDoc, doc, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, deleteDoc, query, where, addDoc } from 'firebase/firestore';
 import { User } from '@/auth/types';
 
 const USERS_COLLECTION = 'users';
@@ -211,7 +211,11 @@ export const adminService = {
         return {
           id: doc.id,
           ...data,
-          validUntil: data.validUntil ? data.validUntil.toDate() : new Date(),
+          validUntil: data.validUntil ? 
+            (typeof data.validUntil.toDate === 'function' ? 
+              data.validUntil.toDate().toISOString().split('T')[0] : 
+              data.validUntil) : 
+            new Date().toISOString().split('T')[0],
         };
       });
     } catch (error) {
@@ -223,16 +227,17 @@ export const adminService = {
   /**
    * Add or update special offer
    */
-  async saveSpecialOffer(offerData: any, offerId?: string): Promise<void> {
+  async saveSpecialOffer(offerData: any, offerId?: string): Promise<string> {
     try {
       if (offerId) {
         // Update existing offer
         const offerRef = doc(db, 'specialOffers', offerId);
         await updateDoc(offerRef, offerData);
+        return offerId;
       } else {
         // Add new offer
-        // In a real implementation, you would use addDoc here
-        console.log('Adding new offer:', offerData);
+        const docRef = await addDoc(collection(db, 'specialOffers'), offerData);
+        return docRef.id;
       }
     } catch (error) {
       console.error('Error saving special offer:', error);
